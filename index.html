@@ -184,42 +184,45 @@
 
         // === FUNGSI REGISTER ===
         async function handleRegister() {
-            const name = document.getElementById('regName')?.value.trim();
-            const email = document.getElementById('regEmail')?.value.trim();
-            const pass = document.getElementById('regPass')?.value;
-            const msg = document.getElementById('msg');
-            const btn = document.getElementById('btnRegister');
+    const name = document.getElementById('regName')?.value.trim();
+    const email = document.getElementById('regEmail')?.value.trim();
+    const pass = document.getElementById('regPass')?.value;
+    const msg = document.getElementById('msg');
+    const btn = document.getElementById('btnRegister');
 
-            if (!name || !email || !pass) {
-                if (msg) msg.innerText = "Semua field wajib diisi.";
-                return;
+    if (!name || !email || !pass) {
+        if (msg) msg.innerText = "Semua field wajib diisi.";
+        return;
+    }
+
+    const originalBtnText = btn.innerText;
+    btn.innerText = "Mendaftar...";
+    btn.disabled = true;
+    if (msg) msg.innerText = '';
+
+    try {
+        const { error } = await supabase.auth.signUp({
+            email: email,
+            password: pass,
+            options: { 
+                data: { full_name: name } 
             }
+        });
 
-            const originalBtnText = btn.innerText;
-            btn.innerText = "Mendaftar...";
-            btn.disabled = true;
-            if (msg) msg.innerText = '';
+        if (error) throw error;
+        
+        alert('Pendaftaran berhasil! Silakan cek email konfirmasi (jika fitur aktif) lalu login.');
+        toggleView();
+        
+    } catch (err) {
+        console.error('Register error:', err);
+        if (msg) msg.innerText = err.message || "Gagal mendaftar.";
+    } finally {
+        btn.innerText = originalBtnText;
+        btn.disabled = false;
+    }
+}
 
-            try {
-                const { error } = await supabase.auth.signUp({
-                    email: email,
-                    password: pass,
-                    data: { full_name: name } }
-                });
-
-                if (error) throw error;
-                
-                alert('Pendaftaran berhasil! Silakan login.');
-                toggleView();
-                
-            } catch (err) {
-                console.error('Register error:', err);
-                if (msg) msg.innerText = err.message || "Gagal mendaftar.";
-            } finally {
-                btn.innerText = originalBtnText;
-                btn.disabled = false;
-            }
-        }
 
         // === EVENT LISTENERS ===
         document.addEventListener('DOMContentLoaded', function() {
