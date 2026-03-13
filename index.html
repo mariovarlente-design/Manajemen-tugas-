@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - PT Klase Auto Graha</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="KlaseKurir">
+    <link rel="apple-touch-icon" href="https://oyakbndsejhpqsvycdud.supabase.co/storage/v1/object/public/logo/fsimage%20(1).png">
+    <link rel="manifest" href="manifest.json">
+
+    <!-- CDN URLs (TANPA SPASI) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style> 
+        body { font-family: 'Inter', sans-serif; } 
+        .toggle-password { cursor: pointer; user-select: none; }
+    </style>
+</head>
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
+        <!-- Logo & Header -->
+        <div class="text-center mb-8">
+            <img src="https://oyakbndsejhpqsvycdud.supabase.co/storage/v1/object/public/logo/fsimage%20(1).png" alt="Logo PT Klase Auto Graha" class="h-20 mx-auto mb-4 object-contain">         
+            <h2 class="text-xl font-bold text-slate-800">PT Klase Auto Graha</h2>
+            <p class="text-slate-500 text-sm">Sistem Manajemen Pengiriman Dokumen</p>
+        </div>
+
+        <!-- Form Login -->
+        <div id="loginForm">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Username / Email</label>
+                    <input type="text" id="loginUser" class="mt-1 block w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="admin atau email">
+                </div>
+                <div class="relative">
+                    <label class="block text-sm font-medium text-slate-700">Password</label>
+                    <input type="password" id="loginPass" class="mt-1 block w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 outline-none transition pr-10" placeholder="••••••">
+                    <i class="fas fa-eye toggle-password absolute right-3 top-9 text-slate-400 hover:text-slate-600" id="toggleLoginPass"></i>
+                </div>
+                <button id="btnLogin" class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition">
+                    Masuk Sistem
+                </button>
+            </div>
+            <div class="mt-6 text-center">
+                <button type="button" id="btnToggleRegister" class="text-sm text-blue-600 hover:text-blue-500 font-medium">Belum punya akun? Daftar Kurir</button>
+            </div>
+        </div>
+
+        <!-- Form Register -->
+        <div id="registerForm" class="hidden">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Nama Lengkap</label>
+                    <input type="text" id="regName" class="mt-1 block w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Email</label>
+                    <input type="email" id="regEmail" class="mt-1 block w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                </div>
+                <div class="relative">
+                    <label class="block text-sm font-medium text-slate-700">Password</label>
+                    <input type="password" id="regPass" class="mt-1 block w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 outline-none transition pr-10" placeholder="••••••">
+                    <i class="fas fa-eye toggle-password absolute right-3 top-9 text-slate-400 hover:text-slate-600" id="toggleRegPass"></i>
+                </div>
+                <button id="btnRegister" class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition">
+                    Daftar Akun
+                </button>
+            </div>
+            <div class="mt-6 text-center">
+                <button type="button" id="btnToggleLogin" class="text-sm text-slate-600 hover:text-slate-800 font-medium">Kembali ke Login</button>
+            </div>
+        </div>
+
+        <p id="msg" class="mt-4 text-center text-red-500 text-sm font-medium min-h-[20px]"></p>
+    </div>
+
+    <!-- SCRIPT UTAMA -->
+    <script>
+    (function() {
+        'use strict';
+
+        // === KONFIGURASI (TANPA SPASI!) ===
+        const SUPABASE_URL = 'https://oyakbndsejhpqsvycdud.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95YWtibmRzZWpocHFzdnljZHVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzODYwMjksImV4cCI6MjA4ODk2MjAyOX0.oH7XK00yZNKAuDF2GnXtdU3PUYRWtMQ4I43Q13AC9KE';
+        const ADMIN_USER = "admin";
+        const ADMIN_PASS = "admin123";
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // === PWA REGISTRATION (Hanya untuk Kurir) ===
+        function registerPWA() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js')
+                    .then((registration) => {
+                        console.log('✅ Service Worker registered:', registration.scope);
+                    })
+                    .catch((err) => console.warn('⚠️ SW registration failed:', err));
+            }
+        }
+
+        // === FUNGSI UI ===
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (!input || !icon) return;
+
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.replace("fa-eye", "fa-eye-slash");
+            } else {
+                input.type = "password";
+                icon.classList.replace("fa-eye-slash", "fa-eye");
+            }
+        }
+
+        function toggleView() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const msg = document.getElementById('msg');
+
+            if (loginForm && registerForm) {
+                loginForm.classList.toggle('hidden');
+                registerForm.classList.toggle('hidden');
+            }
+            if (msg) msg.innerText = '';
+        }
+
+        // === FUNGSI LOGIN ===
+        async function handleLogin() {
+            const userIn = document.getElementById('loginUser');
+            const passIn = document.getElementById('loginPass');
+            const msg = document.getElementById('msg');
+            const btn = document.getElementById('btnLogin');
+
+            if (!userIn || !passIn || !btn) return;
+
+            const user = userIn.value.trim();
+            const pass = passIn.value;
+            const originalBtnText = btn.innerText;
+
+            btn.innerText = "Memuat...";
+            btn.disabled = true;
+            if (msg) msg.innerText = '';
+
+            try {
+                // 1. Cek Admin Hardcode
+                if (user === ADMIN_USER && pass === ADMIN_PASS) {
+                    localStorage.setItem('role', 'admin');
+                    window.location.replace('admin.html');
+                    return;
+                }
+
+                // 2. Cek User via Supabase
+                const { data, error } = await supabase.auth.signInWithPassword({ 
+                    email: user, 
+                    password: pass 
+                });
+
+                if (error) throw error;
+
+                // Login Sukses - Kurir
+                localStorage.setItem('role', 'kurir');
+                localStorage.setItem('userId', data.user.id);
+
+                // ✅ Register PWA sebelum redirect
+                registerPWA();
+                window.location.replace('user_dashboard.html');
+
+            } catch (err) {
+                console.error('Login error:', err);
+                if (msg) msg.innerText = "Email atau password salah.";
+            } finally {
+                btn.innerText = originalBtnText;
+                btn.disabled = false;
+            }
+        }
+
+        // === FUNGSI REGISTER ===
+        async function handleRegister() {
+            const name = document.getElementById('regName')?.value.trim();
+            const email = document.getElementById('regEmail')?.value.trim();
+            const pass = document.getElementById('regPass')?.value;
+            const msg = document.getElementById('msg');
+            const btn = document.getElementById('btnRegister');
+
+            if (!name || !email || !pass) {
+                if (msg) msg.innerText = "Semua field wajib diisi.";
+                return;
+            }
+
+            const originalBtnText = btn.innerText;
+            btn.innerText = "Mendaftar...";
+            btn.disabled = true;
+            if (msg) msg.innerText = '';
+
+            try {
+                const { error } = await supabase.auth.signUp({
+                    email: email,
+                    password: pass,
+                    options: { data: { full_name: name } }
+                });
+
+                if (error) throw error;
+
+                alert('Pendaftaran berhasil! Silakan login.');
+                toggleView();
+
+            } catch (err) {
+                console.error('Register error:', err);
+                if (msg) msg.innerText = err.message || "Gagal mendaftar.";
+            } finally {
+                btn.innerText = originalBtnText;
+                btn.disabled = false;
+            }
+        }
+
+        // === EVENT LISTENERS ===
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle Password
+            document.getElementById('toggleLoginPass')?.addEventListener('click', () => togglePassword('loginPass', 'toggleLoginPass'));
+            document.getElementById('toggleRegPass')?.addEventListener('click', () => togglePassword('regPass', 'toggleRegPass'));
+
+            // Toggle Form
+            document.getElementById('btnToggleRegister')?.addEventListener('click', toggleView);
+            document.getElementById('btnToggleLogin')?.addEventListener('click', toggleView);
+
+            // Login & Register Buttons
+            document.getElementById('btnLogin')?.addEventListener('click', handleLogin);
+            document.getElementById('btnRegister')?.addEventListener('click', handleRegister);
+
+            // Enter Key Support
+            document.getElementById('loginPass')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
+            document.getElementById('regPass')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleRegister(); });
+        });
+
+    })(); // Akhir IIFE
+    </script>
+</body>
+</html>
