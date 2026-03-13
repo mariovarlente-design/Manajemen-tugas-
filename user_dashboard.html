@@ -280,6 +280,12 @@
         document.getElementById('btnLogout').onclick = () => { localStorage.clear(); window.location.replace('index.html'); };
         document.addEventListener('DOMContentLoaded', init);
     })();
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+        .then(() => console.log("SW Registered for Dashboard"));
+}
+
     </script>
 </body>
 </html>
