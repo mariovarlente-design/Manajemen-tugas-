@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - PT Klase Auto Graha</title>
-
+    
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#3b82f6">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,13 +12,13 @@
     <meta name="apple-mobile-web-app-title" content="KlaseKurir">
     <link rel="apple-touch-icon" href="https://oyakbndsejhpqsvycdud.supabase.co/storage/v1/object/public/logo/fsimage%20(1).png">
     <link rel="manifest" href="manifest.json">
-
+    
     <!-- CDN URLs (TANPA SPASI) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    
     <style> 
         body { font-family: 'Inter', sans-serif; } 
         .toggle-password { cursor: pointer; user-select: none; }
@@ -87,13 +87,13 @@
     <script>
     (function() {
         'use strict';
-
+        
         // === KONFIGURASI (TANPA SPASI!) ===
         const SUPABASE_URL = 'https://oyakbndsejhpqsvycdud.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95YWtibmRzZWpocHFzdnljZHVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzODYwMjksImV4cCI6MjA4ODk2MjAyOX0.oH7XK00yZNKAuDF2GnXtdU3PUYRWtMQ4I43Q13AC9KE';
         const ADMIN_USER = "admin";
         const ADMIN_PASS = "admin123";
-
+        
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // === PWA REGISTRATION (Hanya untuk Kurir) ===
@@ -106,13 +106,12 @@
                     .catch((err) => console.warn('⚠️ SW registration failed:', err));
             }
         }
-
+        
         // === FUNGSI UI ===
         function togglePassword(inputId, iconId) {
             const input = document.getElementById(inputId);
             const icon = document.getElementById(iconId);
             if (!input || !icon) return;
-
             if (input.type === "password") {
                 input.type = "text";
                 icon.classList.replace("fa-eye", "fa-eye-slash");
@@ -126,7 +125,6 @@
             const loginForm = document.getElementById('loginForm');
             const registerForm = document.getElementById('registerForm');
             const msg = document.getElementById('msg');
-
             if (loginForm && registerForm) {
                 loginForm.classList.toggle('hidden');
                 registerForm.classList.toggle('hidden');
@@ -164,17 +162,17 @@
                     email: user, 
                     password: pass 
                 });
-
+                
                 if (error) throw error;
-
+                
                 // Login Sukses - Kurir
                 localStorage.setItem('role', 'kurir');
                 localStorage.setItem('userId', data.user.id);
-
-                // ✅ Register PWA sebelum redirect
+                
+                // Register PWA sebelum redirect ke dashboard kurir
                 registerPWA();
-                window.location.replace('dashboard.html');
-
+                window.location.replace('user_dashboard.html');
+                
             } catch (err) {
                 console.error('Login error:', err);
                 if (msg) msg.innerText = "Email atau password salah.";
@@ -206,14 +204,14 @@
                 const { error } = await supabase.auth.signUp({
                     email: email,
                     password: pass,
-                    options: { data: { full_name: name } }
+                    options: {  { full_name: name } }
                 });
 
                 if (error) throw error;
-
+                
                 alert('Pendaftaran berhasil! Silakan login.');
                 toggleView();
-
+                
             } catch (err) {
                 console.error('Register error:', err);
                 if (msg) msg.innerText = err.message || "Gagal mendaftar.";
@@ -225,24 +223,17 @@
 
         // === EVENT LISTENERS ===
         document.addEventListener('DOMContentLoaded', function() {
-            // Toggle Password
             document.getElementById('toggleLoginPass')?.addEventListener('click', () => togglePassword('loginPass', 'toggleLoginPass'));
             document.getElementById('toggleRegPass')?.addEventListener('click', () => togglePassword('regPass', 'toggleRegPass'));
-
-            // Toggle Form
             document.getElementById('btnToggleRegister')?.addEventListener('click', toggleView);
             document.getElementById('btnToggleLogin')?.addEventListener('click', toggleView);
-
-            // Login & Register Buttons
             document.getElementById('btnLogin')?.addEventListener('click', handleLogin);
             document.getElementById('btnRegister')?.addEventListener('click', handleRegister);
-
-            // Enter Key Support
             document.getElementById('loginPass')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
             document.getElementById('regPass')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleRegister(); });
         });
 
-    })(); // Akhir IIFE
+    })();
     </script>
 </body>
 </html>
