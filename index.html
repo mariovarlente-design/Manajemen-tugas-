@@ -204,7 +204,7 @@
                 const { error } = await supabase.auth.signUp({
                     email: email,
                     password: pass,
-                    options: {  { full_name: name } }
+                    data: { full_name: name } }
                 });
 
                 if (error) throw error;
