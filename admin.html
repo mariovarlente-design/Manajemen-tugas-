@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Sistem Manajemen Pengiriman - PT KAG</title>
+    <title>Sistem Manajemen Pengiriman - PT KAR</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -269,51 +269,86 @@
 
         // Export PDF - FORMAT KOP SURAT LENGKAP
         document.getElementById('btnPdf').onclick = () => {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4');
-            const start = document.getElementById('filterStart').value || 'Awal';
-            const end = document.getElementById('filterEnd').value || 'Sekarang';
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4'); // Landscape agar kolom muat
+        
+        // Ambil data yang sedang tampil di tabel (sudah terfilter)
+        const start = document.getElementById('filterStart').value;
+        const end = document.getElementById('filterEnd').value;
+        const search = document.getElementById('searchInput').value.toLowerCase();
 
-            // KOP SURAT
-            doc.setFontSize(18); doc.setTextColor(40);
-            doc.text("PT KLASE AUTO GRAHA", 14, 20);
-            doc.setFontSize(10); doc.setTextColor(100);
-            doc.text("Laporan Resmi Riwayat Pengiriman Dokumen & Barang", 14, 26);
-            doc.text(`Periode: ${start} s/d ${end}`, 14, 31);
-            doc.line(14, 35, 280, 35); // Horizontal Line
+        const filteredData = allTasks.filter(t => {
+            const dateMatch = (!start || t.tanggal_pengiriman >= start) && (!end || t.tanggal_pengiriman <= end);
+            const searchMatch = (t.nama_pt && t.nama_pt.toLowerCase().includes(search)) || (t.no_surat && t.no_surat.toLowerCase().includes(search));
+            return dateMatch && searchMatch;
+        });
 
-            doc.autoTable({
-                html: '#taskTable',
-                startY: 40,
-                columns: [0, 1, 2, 3, 4], // Hanya kolom data
-                headStyles: { fillColor: [30, 64, 175] },
-                theme: 'grid'
-            });
+        if (filteredData.length === 0) return alert("Tidak ada data untuk dicetak");
 
-            doc.save(`Laporan_KAG_${start}_to_${end}.pdf`);
-        };
+        // Header Laporan Admin
+        doc.setFontSize(18); 
+        doc.text("LAPORAN PENGIRIMAN LOGISTIK - PT KAG", 14, 20);
+        doc.setFontSize(10); 
+        doc.text(`Dicetak oleh: Administrator`, 14, 28);
+        doc.text(`Periode: ${start || 'Semua'} s/d ${end || 'Sekarang'}`, 14, 33);
+        
+        const rows = filteredData.map(t => [
+            t.no_surat || '-',
+            t.created_at ? new Date(t.created_at).toLocaleDateString('id-ID') : '-', // Tgl Terima dari Admin
+            t.tanggal_pengiriman || '-', // Tgl Kirim
+            t.nama_pt || '-',
+            t.penerima || '-',
+            profileMap[t.assigned_to] || '-', // Nama Kurir
+            t.status.toUpperCase()
+        ]);
+
+        doc.autoTable({ 
+            startY: 40, 
+            head: [['No Surat', 'Tgl Terima', 'Tgl Kirim', 'Tujuan PT', 'Penerima', 'Kurir', 'Status']], 
+            body: rows, 
+            headStyles: {fillColor:[37, 99, 235]},
+            styles: { fontSize: 8 }
+        });
+
+        doc.save(`Laporan_Admin_KAG.pdf`);
+    } catch (err) {
+        console.error(err);
+        alert("Gagal mendownload PDF: " + err.message);
+    }
+};
+
 
         // Export Excel (CSV)
         document.getElementById('btnExcel').onclick = () => {
-            const start = document.getElementById('filterStart').value || 'Awal';
-            const end = document.getElementById('filterEnd').value || 'Akhir';
-            
-            let csv = ["\uFEFFNo Surat,Tanggal,PT Tujuan,Alamat,Kurir,Status"];
-            const currentData = allTasks.filter(t => {
-                const dateMatch = (!start || t.tanggal_pengiriman >= start) && (!end || t.tanggal_pengiriman <= end);
-                return dateMatch;
-            });
+    const start = document.getElementById('filterStart').value;
+    const end = document.getElementById('filterEnd').value;
+    const search = document.getElementById('searchInput').value.toLowerCase();
 
-            currentData.forEach(t => {
-                csv.push(`"${t.no_surat}","${t.tanggal_pengiriman}","${t.nama_pt}","${t.alamat_singkat}","${profileMap[t.assigned_to] || '-'}","${t.status}"`);
-            });
+    const filteredData = allTasks.filter(t => {
+        const dateMatch = (!start || t.tanggal_pengiriman >= start) && (!end || t.tanggal_pengiriman <= end);
+        const searchMatch = (t.nama_pt && t.nama_pt.toLowerCase().includes(search)) || (t.no_surat && t.no_surat.toLowerCase().includes(search));
+        return dateMatch && searchMatch;
+    });
 
-            const blob = new Blob([csv.join("\n")], { type: "text/csv;charset=utf-8" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `Laporan_KAG_${start}_ke_${end}.csv`;
-            link.click();
-        };
+    if (filteredData.length === 0) return alert("Tidak ada data untuk diekspor");
+
+    let csv = ["\uFEFFNo Surat,Tanggal Terima,Tanggal Kirim,PT Tujuan,Nama Penerima,Kurir,Status"];
+    
+    filteredData.forEach(t => {
+        const tglTerima = t.created_at ? new Date(t.created_at).toLocaleDateString('id-ID') : '-';
+        const tglKirim = t.tanggal_pengiriman || '-';
+        const kurir = profileMap[t.assigned_to] || '-';
+        
+        csv.push(`"${t.no_surat}","${tglTerima}","${tglKirim}","${t.nama_pt}","${t.penerima || '-'}","${kurir}","${t.status.toUpperCase()}"`);
+    });
+
+    const blob = new Blob([csv.join("\n")], { type: "text/csv;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `Data_Logistik_KAG.csv`; 
+    link.click();
+};
 
         // Event Listeners Filter
         document.getElementById('filterStart').addEventListener('change', applyFilters);
