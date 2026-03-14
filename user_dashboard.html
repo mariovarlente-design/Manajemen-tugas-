@@ -6,16 +6,16 @@
     <title>Kurir Pro - PT Klase Auto Graha</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#007bff">
-
+    
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    
+
     <style> 
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #fdfdfd; min-height: 100vh; } 
         .glass-header { 
@@ -35,7 +35,7 @@
 </head>
 <body class="flex flex-col">
 
-    <audio id="notifSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+    <audio id="notifSound" src="https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3" preload="auto"></audio>
 
     <nav class="glass-header sticky top-0 z-50">
         <div class="max-w-xl mx-auto px-5">
@@ -57,12 +57,24 @@
     </nav>
 
     <main class="max-w-xl mx-auto px-5 py-8 flex-grow w-full">
+        <div id="syncBadge" class="hidden mb-6 bg-amber-50 border border-amber-200 p-4 rounded-3xl flex items-center justify-between shadow-sm shadow-amber-100">
+            <div class="flex items-center gap-3 text-amber-700">
+                <div class="bg-amber-500 text-white w-10 h-10 rounded-2xl flex items-center justify-center">
+                    <i class="fas fa-cloud-upload-alt animate-bounce"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black uppercase mb-1">Sinkronisasi</p>
+                    <p class="text-xs font-bold"><span id="pendingCount">0</span> Tugas menunggu internet...</p>
+                </div>
+            </div>
+        </div>
+
         <div class="mb-8 space-y-4">
             <div>
                 <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Selamat Bertugas,</p>
                 <h1 id="userNameDisplay" class="text-2xl font-black text-slate-800 italic">Memuat Nama...</h1>
             </div>
-            
+
             <div class="clock-container rounded-2xl p-4 shadow-lg shadow-slate-200 flex justify-between items-center text-white">
                 <div>
                     <p id="realtimeDate" class="text-[10px] font-bold text-blue-400 uppercase tracking-tighter mb-0.5">---</p>
@@ -75,7 +87,7 @@
         </div>
 
         <div class="bg-slate-900 rounded-[2rem] p-6 mb-8 text-white shadow-xl shadow-slate-200">
-            <h2 class="text-xs font-black uppercase tracking-widest mb-4 flex items-center gap-2">
+            <h2 class="text-xs font-black uppercase mb-4 flex items-center gap-2">
                 <i class="fas fa-file-download text-blue-400"></i> Unduh Laporan Kerja
             </h2>
             <div class="grid grid-cols-2 gap-3 mb-4">
@@ -99,8 +111,8 @@
         </div>
 
         <div class="flex bg-slate-100 rounded-2xl p-1.5 mb-8">
-            <button id="tabPending" class="flex-1 py-3.5 text-xs font-black uppercase tracking-wider rounded-xl transition tab-active" onclick="switchTab('pending')">Aktif</button>
-            <button id="tabSelesai" class="flex-1 py-3.5 text-xs font-black uppercase tracking-wider rounded-xl transition text-slate-400" onclick="switchTab('selesai')">Selesai</button>
+            <button id="tabPending" class="flex-1 py-3.5 text-xs font-black uppercase rounded-xl transition tab-active" onclick="switchTab('pending')">Aktif</button>
+            <button id="tabSelesai" class="flex-1 py-3.5 text-xs font-black uppercase rounded-xl transition text-slate-400" onclick="switchTab('selesai')">Selesai</button>
         </div>
 
         <div id="taskList" class="space-y-6">
@@ -113,15 +125,18 @@
     </footer>
 
     <script>
-    (function() {
+       (function() {
         'use strict';
         if (localStorage.getItem('role') !== 'kurir') { window.location.replace('index.html'); return; }
-        
+
         const SUPABASE_URL = 'https://oyakbndsejhpqsvycdud.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95YWtibmRzZWpocHFzdnljZHVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzODYwMjksImV4cCI6MjA4ODk2MjAyOX0.oH7XK00yZNKAuDF2GnXtdU3PUYRWtMQ4I43Q13AC9KE';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const myId = localStorage.getItem('userId');
-        
+
+        const db = new Dexie("OfflineDatabase");
+        db.version(1).stores({ pendingUploads: '++id, taskId, file, coords, waktuSelesai' });
+
         let allTasks = [];
         let activeFilter = 'pending';
 
@@ -130,7 +145,19 @@
             setInterval(updateClock, 1000);
             await loadProfile();
             await fetchTasks();
+            await updateSyncBadge();
             enableRealtimeNotif();
+            window.addEventListener('online', syncOfflineData);
+            setInterval(syncOfflineData, 30000);
+        }
+
+        async function updateSyncBadge() {
+            const count = await db.pendingUploads.count();
+            const badge = document.getElementById('syncBadge');
+            if (count > 0) {
+                badge.classList.remove('hidden');
+                document.getElementById('pendingCount').innerText = count;
+            } else { badge.classList.add('hidden'); }
         }
 
         function updateClock() {
@@ -152,12 +179,19 @@
         }
 
         function enableRealtimeNotif() {
-            supabase.channel('notif-tugas').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tasks', filter: `assigned_to=eq.${myId}` }, 
+            supabase.channel('notif-tugas').on('postgres_changes', { 
+                event: 'INSERT', 
+                schema: 'public', 
+                table: 'tasks', 
+                filter: `assigned_to=eq.${myId}` 
+            }, 
             () => {
-                document.getElementById('notifSound').play().catch(() => {});
-                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                const sound = document.getElementById('notifSound');
+                sound.currentTime = 0;
+                sound.play().catch(e => console.log("Audio play blocked"));
+                if (navigator.vibrate) navigator.vibrate([500, 200, 500]);
                 fetchTasks();
-                alert('🔔 Ada tugas baru dari Admin!');
+                alert('🚨 PERHATIAN: Ada tugas baru masuk!');
             }).subscribe();
         }
 
@@ -172,19 +206,30 @@
             const container = document.getElementById('taskList');
             const filtered = allTasks.filter(t => t.status === activeFilter);
             if (filtered.length === 0) {
-                container.innerHTML = '<div class="bg-white rounded-[2rem] p-12 text-center text-slate-300 font-bold text-sm italic">Belum ada data</div>';
+                container.innerHTML = '<div class="bg-white rounded-[2rem] p-12 text-center text-slate-300 font-bold italic">Belum ada data</div>';
                 return;
             }
             container.innerHTML = '';
             filtered.forEach(t => {
                 const isPending = t.status === 'pending';
+                const queryMaps = encodeURIComponent(`${t.alamat_singkat} ${t.nama_pt}`);
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${queryMaps}`;
+
                 container.innerHTML += `
-                    <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-100 border border-slate-50 overflow-hidden">
+                    <div class="bg-white rounded-[2.5rem] shadow-xl border border-slate-50 overflow-hidden">
                         <div class="p-8">
-                            <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2 block">${t.no_surat || 'LOGISTICS REF'}</span>
+                            <span class="text-[10px] font-black text-blue-600 uppercase mb-2 block">${t.no_surat || 'LOGISTICS REF'}</span>
                             <h3 class="font-black text-xl text-slate-800 mb-4">${t.nama_pt}</h3>
                             <div class="space-y-3 mb-8 text-sm text-slate-600 font-bold">
-                                <div class="flex gap-3"><i class="fas fa-map-pin text-rose-500 mt-1"></i><p>${t.alamat_singkat || '-'}</p></div>
+                                <div class="flex gap-3 items-start">
+                                    <i class="fas fa-map-pin text-rose-500 mt-1"></i>
+                                    <div class="flex-grow">
+                                        <p>${t.alamat_singkat || '-'}</p>
+                                        <a href="${mapsUrl}" target="_blank" class="text-blue-600 text-[10px] font-black uppercase mt-1 flex items-center gap-1">
+                                            <i class="fas fa-directions"></i> Buka Rute (Maps)
+                                        </a>
+                                    </div>
+                                </div>
                                 <div class="flex gap-3"><i class="fas fa-user-circle text-blue-500 mt-1"></i><p>Penerima: ${t.penerima || '-'}</p></div>
                             </div>
                             ${isPending ? `
@@ -194,14 +239,60 @@
                                         <p class="text-[10px] font-black text-slate-400 uppercase" id="label-${t.id}">Ambil Foto Bukti</p>
                                         <input type="file" id="file-${t.id}" accept="image/*" capture="environment" class="hidden" onchange="document.getElementById('label-${t.id}').innerText='✓ Foto Siap Unggah';">
                                     </label>
-                                    <button onclick="completeTask('${t.id}')" id="btn-${t.id}" class="w-full gradient-blue text-white font-black py-5 rounded-2xl flex items-center justify-center gap-3">KONFIRMASI SELESAI</button>
+                                    <button onclick="completeTask('${t.id}')" id="btn-${t.id}" class="w-full gradient-blue text-white font-black py-5 rounded-2xl">KONFIRMASI SELESAI</button>
                                 </div>
-                            ` : `<div class="pt-4 border-t border-slate-50 flex justify-between items-center">
+                            ` : `
+                                <div class="pt-4 border-t border-slate-50 flex justify-between items-center">
                                     <span class="text-emerald-500 font-black text-[10px] uppercase tracking-widest flex items-center gap-2"><i class="fas fa-check-double"></i> Terkirim</span>
                                     <a href="${t.bukti_url}" target="_blank" class="text-blue-600 font-black text-[10px] uppercase">Lihat Bukti</a>
-                                 </div>`}
+                                </div>
+                            `}
                         </div>
                     </div>`;
+            });
+        }
+
+        async function syncOfflineData() {
+            if (!navigator.onLine) return;
+            const pending = await db.pendingUploads.toArray();
+            for (const item of pending) {
+                try {
+                    const fileName = `KAG_${item.taskId}_${Date.now()}.jpg`;
+                    await supabase.storage.from('bukti').upload(fileName, item.file);
+                    const { data: url } = supabase.storage.from('bukti').getPublicUrl(fileName);
+                    await supabase.from('tasks').update({ 
+                        status: 'selesai', 
+                        bukti_url: url.publicUrl, 
+                        location_coords: item.coords,
+                        tanggal_pengiriman: item.waktuSelesai
+                    }).eq('id', item.taskId);
+                    await db.pendingUploads.delete(item.id);
+                } catch (e) { console.error("Sync failed", e); }
+            }
+            updateSyncBadge(); fetchTasks();
+        }
+
+        async function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const max = 800;
+                        if (width > max) { height *= max / width; width = max; }
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        canvas.toBlob((blob) => {
+                            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                        }, 'image/jpeg', 0.7);
+                    };
+                };
             });
         }
 
@@ -209,56 +300,51 @@
             const fileInput = document.getElementById(`file-${id}`);
             if (!fileInput.files[0]) return alert('Penting: Ambil foto bukti!');
             const btn = document.getElementById(`btn-${id}`);
-            btn.disabled = true; btn.innerHTML = 'Memproses...';
+            btn.disabled = true; btn.innerHTML = 'Mengecilkan Gambar...';
+
             try {
+                const originalFile = fileInput.files[0];
+                const compressedFile = await compressImage(originalFile);
+                const sekarang = new Date().toLocaleString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/\//g, '-');
                 let coords = "No GPS";
-                const pos = await new Promise(r => navigator.geolocation.getCurrentPosition(r, () => r(null), {timeout:8000}));
-                if(pos) coords = `${pos.coords.latitude},${pos.coords.longitude}`;
-                const file = fileInput.files[0];
+                try {
+                    const pos = await new Promise(r => navigator.geolocation.getCurrentPosition(r, () => r(null), {timeout:5000, enableHighAccuracy: true}));
+                    if(pos) coords = `${pos.coords.latitude},${pos.coords.longitude}`;
+                } catch(e) {}
+
+                if (!navigator.onLine) {
+                    await db.pendingUploads.add({ taskId: id, file: compressedFile, coords: coords, waktuSelesai: sekarang });
+                    alert('Sinyal lemah! Data disimpan di HP.');
+                    updateSyncBadge(); renderTasks(); return;
+                }
+
+                btn.innerHTML = 'Mengirim Data...';
                 const fileName = `KAG_${id}_${Date.now()}.jpg`;
-                await supabase.storage.from('bukti').upload(fileName, file);
+                await supabase.storage.from('bukti').upload(fileName, compressedFile);
                 const { data: url } = supabase.storage.from('bukti').getPublicUrl(fileName);
-                await supabase.from('tasks').update({ status: 'selesai', bukti_url: url.publicUrl, location_coords: coords }).eq('id', id);
+                await supabase.from('tasks').update({ status: 'selesai', bukti_url: url.publicUrl, location_coords: coords, tanggal_pengiriman: sekarang }).eq('id', id);
                 alert('Berhasil!'); fetchTasks();
-            } catch (e) { alert('Gagal: ' + e.message); btn.disabled = false; }
+            } catch (e) { alert('Gagal: ' + e.message); } finally { btn.disabled = false; btn.innerHTML = 'KONFIRMASI SELESAI'; }
         };
 
-        // --- FUNGSI DOWNLOAD BARU (PDF & EXCEL) ---
         function getFilteredData() {
             const start = document.getElementById('filterStart').value;
             const end = document.getElementById('filterEnd').value;
             return allTasks.filter(t => { 
-                const dateTugas = t.tanggal_pengiriman || "";
+                const dateTugas = t.created_at ? t.created_at.split('T')[0] : "";
                 return (!start || dateTugas >= start) && (!end || dateTugas <= end); 
             });
         }
 
         document.getElementById('btnPdf').onclick = () => {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4'); // Landscape
+            const doc = new jsPDF('l', 'mm', 'a4');
             const data = getFilteredData();
             const name = document.getElementById('userNameDisplay').innerText;
             if (data.length === 0) return alert('Tidak ada data');
-
             doc.setFontSize(16); doc.text("LAPORAN KERJA KURIR - PT KAR", 14, 20);
-            doc.setFontSize(10); doc.text(`Nama: ${name} | Periode: ${document.getElementById('filterStart').value || 'Awal'} s/d ${document.getElementById('filterEnd').value || 'Sekarang'}`, 14, 28);
-            
-            const rows = data.map(t => [
-                t.no_surat,
-                t.created_at ? new Date(t.created_at).toLocaleDateString('id-ID') : '-',
-                t.tanggal_pengiriman || '-',
-                t.nama_pt,
-                t.penerima || '-',
-                t.status.toUpperCase()
-            ]);
-
-            doc.autoTable({ 
-                startY: 35, 
-                head: [['No Surat', 'Tgl Terima', 'Tgl Kirim', 'PT Tujuan', 'Penerima', 'Status']], 
-                body: rows, 
-                headStyles: {fillColor:[37, 99, 235]},
-                styles: {fontSize: 8}
-            });
+            const rows = data.map(t => [t.no_surat, t.created_at ? new Date(t.created_at).toLocaleString('id-ID') : '-', t.tanggal_pengiriman || '-', t.nama_pt, t.penerima || '-', t.status.toUpperCase()]);
+            doc.autoTable({ startY: 35, head: [['No Surat', 'Tgl Terima', 'Tgl Kirim', 'PT Tujuan', 'Penerima', 'Status']], body: rows, headStyles: {fillColor:[37, 99, 235]} });
             doc.save(`Laporan_Kurir_${name}.pdf`);
         };
 
@@ -266,27 +352,17 @@
             const data = getFilteredData();
             const name = document.getElementById('userNameDisplay').innerText;
             if (data.length === 0) return alert('Tidak ada data');
-
-            let csv = ["\uFEFFNo Surat,Tanggal Terima,Tanggal Kirim,PT Tujuan,Nama Penerima,Status"];
-            data.forEach(t => {
-                const tglTerima = t.created_at ? new Date(t.created_at).toLocaleDateString('id-ID') : '-';
-                csv.push(`"${t.no_surat}","${tglTerima}","${t.tanggal_pengiriman}","${t.nama_pt}","${t.penerima || '-'}","${t.status.toUpperCase()}"`);
-            });
+            let csv = ["\uFEFFNo Surat,Tgl Terima,Tgl Kirim,PT Tujuan,Penerima,Status"];
+            data.forEach(t => csv.push(`"${t.no_surat}","${t.created_at}","${t.tanggal_pengiriman}","${t.nama_pt}","${t.penerima}","${t.status}"`));
             const blob = new Blob([csv.join("\n")], { type: "text/csv;charset=utf-8" });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = `Riwayat_Kerja_${name}.csv`; link.click();
+            link.download = `Riwayat_${name}.csv`; link.click();
         };
 
         document.getElementById('btnLogout').onclick = () => { localStorage.clear(); window.location.replace('index.html'); };
         document.addEventListener('DOMContentLoaded', init);
     })();
-
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-        .then(() => console.log("SW Registered for Dashboard"));
-}
-
     </script>
 </body>
 </html>
