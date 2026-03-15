@@ -1,25 +1,33 @@
-const CACHE_NAME = 'klase-kurir-v2'; // Naikkan versi jika ada perubahan besar
+/* PT Klase Auto Graha - Service Worker 
+   File: sw.js
+*/
+
+// Import SDK OneSignal untuk menangani Push Notifications di background
+importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
+
+const CACHE_NAME = 'klase-kurir-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './admin.html',
-  './user_dashboard.html'
-  // Jangan masukkan link CDN eksternal di sini untuk mencegah kegagalan instalasi
+  './user_dashboard.html',
+  './manifest.json'
 ];
 
-// 1. Install - Simpan aset inti
-self.addEventListener('install', (e) => {
-  e.waitUntil(
+// 1. Install Event: Menyimpan aset statis ke Cache
+self.addEventListener('install', (event) => {
+  event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
+      console.log('✅ Caching assets...');
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
   self.skipWaiting();
 });
 
-// 2. Activate - Hapus cache lama
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
+// 2. Activate Event: Membersihkan cache versi lama
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
@@ -29,35 +37,35 @@ self.addEventListener('activate', (e) => {
   self.clients.claim();
 });
 
-// 3. Fetch - Strategi Pintar
-self.addEventListener('fetch', (e) => {
-  const url = new URL(e.request.url);
+// 3. Fetch Event: Strategi "Stale-While-Revalidate"
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
 
-  // ABAIKAN request ke Supabase (API & Auth) - Biarkan langsung ke internet
+  // Jangan simpan request ke Supabase (API) di dalam cache statis
   if (url.hostname.includes('supabase.co')) return;
 
-  e.respondWith(
-    caches.match(e.request).then((cachedResponse) => {
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Berikan yang ada di cache, tapi update cache-nya secara background (Stale-while-revalidate)
-        fetch(e.request).then((networkResponse) => {
-          caches.open(CACHE_NAME).then((cache) => cache.put(e.request, networkResponse));
-        }).catch(() => {}); // Abaikan jika offline
+        // Berikan versi cache, tapi update di background (jika ada internet)
+        fetch(event.request).then((networkResponse) => {
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
+        }).catch(() => {}); 
         
         return cachedResponse;
       }
 
       // Jika tidak ada di cache, ambil dari network
-      return fetch(e.request).then((networkResponse) => {
-        // Simpan aset baru (seperti gambar logo atau CDN) ke cache secara otomatis
+      return fetch(event.request).then((networkResponse) => {
+        // Secara dinamis simpan file baru (seperti gambar logo atau font) ke cache
         if (networkResponse.status === 200) {
           const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(e.request, responseClone));
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
         }
         return networkResponse;
       }).catch(() => {
-        // Jika benar-benar offline dan navigasi ke halaman lain, lempar ke login
-        if (e.request.mode === 'navigate') {
+        // Jika offline total dan navigasi ke halaman yang tidak ada di cache, arahkan ke login
+        if (event.request.mode === 'navigate') {
           return caches.match('./index.html');
         }
       });
