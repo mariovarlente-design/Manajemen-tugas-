@@ -20,6 +20,8 @@
         .gradient-emerald { background: linear-gradient(135deg, #10b981 0%, #065f46 100%); }
         .gradient-rose { background: linear-gradient(135deg, #f43f5e 0%, #9f1239 100%); }
         #taskTable thead th { position: sticky; top: 0; z-index: 10; background: #f1f5f9; }
+        /* Transisi halus untuk modal */
+        #editModal { transition: opacity 0.3s ease; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -42,6 +44,7 @@
     </nav>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow">
+        
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="gradient-blue p-6 rounded-[2rem] shadow-xl text-white">
                 <p class="text-blue-100 text-[10px] font-bold uppercase mb-1">Total Tugas</p>
@@ -123,8 +126,42 @@
                 </table>
             </div>
         </div>
+
+        <div id="editModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div class="bg-white w-full max-w-lg rounded-[2rem] p-8 shadow-2xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-slate-800">Edit Detail Tugas</h2>
+                    <button onclick="closeEditModal()" class="text-slate-400 hover:text-rose-500"><i class="fas fa-times text-xl"></i></button>
+                </div>
+                <input type="hidden" id="edit_id">
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">No Surat</label>
+                        <input type="text" id="edit_no_surat" class="w-full bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Nama PT Tujuan</label>
+                        <input type="text" id="edit_nama_pt" class="w-full bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Alamat</label>
+                        <input type="text" id="edit_alamat" class="w-full bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Pilih Kurir</label>
+                        <select id="edit_select_kurir" class="w-full bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500"></select>
+                    </div>
+                </div>
+                <div class="mt-8 flex gap-3">
+                    <button onclick="closeEditModal()" class="flex-1 py-4 text-slate-500 font-bold uppercase tracking-widest text-xs">Batal</button>
+                    <button id="btnSaveEdit" class="flex-1 gradient-blue text-white py-4 rounded-xl font-bold shadow-lg uppercase tracking-widest text-xs">Simpan Perubahan</button>
+                </div>
+            </div>
+        </div>
+
     </main>
-        <footer class="py-10 text-center">
+
+    <footer class="py-10 text-center">
         <p class="text-[9px] text-slate-300 font-black uppercase tracking-[0.4em]">PT Klase Auto Graha ● 2026 ● rionurmansyah</p>
     </footer>
 
@@ -148,9 +185,17 @@
         async function loadProfiles() {
             const { data } = await supabase.from('profiles').select('id, full_name');
             const select = document.getElementById('select_kurir');
+            const editSelect = document.getElementById('edit_select_kurir');
+            
+            // Reset dulu agar tidak duplikat saat reload
+            select.innerHTML = '<option value="">-- Pilih Kurir --</option>';
+            editSelect.innerHTML = '<option value="">-- Pilih Kurir --</option>';
+
             data.forEach(p => {
                 profileMap[p.id] = p.full_name;
-                select.innerHTML += `<option value="${p.id}">${p.full_name}</option>`;
+                const optionHtml = `<option value="${p.id}">${p.full_name}</option>`;
+                select.innerHTML += optionHtml;
+                editSelect.innerHTML += optionHtml;
             });
         }
 
@@ -182,99 +227,133 @@
             document.getElementById('statSelesai').innerText = tasks.filter(t => t.status === 'selesai').length;
         }
 
-        // Ganti fungsi renderTable Anda dengan ini
-function renderTable(dataList) {
-    const tbody = document.getElementById('taskBody');
-    tbody.innerHTML = '';
-    dataList.forEach(t => {
-        const isDone = t.status === 'selesai';
-        // Buat link Maps jika koordinat tersedia
-        const mapsLink = t.location_coords && t.location_coords !== "No GPS" 
-            ? `https://www.google.com/maps?q=${t.location_coords}` 
-            : null;
+        function renderTable(dataList) {
+            const tbody = document.getElementById('taskBody');
+            tbody.innerHTML = '';
+            dataList.forEach(t => {
+                const isDone = t.status === 'selesai';
+                
+                // Link Maps yang benar
+                const mapsLink = t.location_coords && t.location_coords !== "No GPS" 
+                    ? `https://www.google.com/maps?q=${t.location_coords}` 
+                    : null;
 
-        tbody.innerHTML += `
-            <tr class="hover:bg-slate-50 transition text-xs font-bold">
-                <td class="px-8 py-5 text-blue-600">${t.no_surat || '-'}</td>
-                <td class="px-8 py-5 text-slate-400 font-medium">${t.created_at ? new Date(t.created_at).toLocaleString('id-ID') : '-'}</td>
-                <td class="px-8 py-5 text-emerald-600">${t.tanggal_pengiriman || 'Belum'}</td>
-                <td class="px-8 py-5">
-                    <div class="text-slate-800">${t.nama_pt}</div>
-                    <div class="text-[10px] text-slate-400 font-normal italic">${t.alamat_singkat || '-'}</div>
-                </td>
-                <td class="px-8 py-5 text-slate-500">${profileMap[t.assigned_to] || '-'}</td>
-                <td class="px-8 py-5 text-center">
-                    <span class="px-3 py-1 rounded-full text-[9px] uppercase ${isDone ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">
-                        ${t.status}
-                    </span>
-                </td>
-                <td class="px-8 py-5 text-center">
-                    <div class="flex justify-center gap-3">
-                        ${t.bukti_url ? `<a href="${t.bukti_url}" target="_blank" class="text-blue-500 hover:text-blue-700" title="Lihat Foto Bukti"><i class="fas fa-image text-lg"></i></a>` : ''}
-                        ${mapsLink ? `<a href="${mapsLink}" target="_blank" class="text-rose-500 hover:text-rose-700" title="Lihat Lokasi GPS"><i class="fas fa-map-marker-alt text-lg"></i></a>` : ''}
-                        <button onclick="deleteT('${t.id}')" class="text-slate-300 hover:text-rose-600 transition"><i class="fas fa-trash"></i></button>
-                    </div>
-                </td>
-            </tr>`;
-    });
-}
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition text-xs font-bold">
+                        <td class="px-8 py-5 text-blue-600">${t.no_surat || '-'}</td>
+                        <td class="px-8 py-5 text-slate-400 font-medium">${t.created_at ? new Date(t.created_at).toLocaleString('id-ID') : '-'}</td>
+                        <td class="px-8 py-5 text-emerald-600">${t.tanggal_pengiriman || 'Belum'}</td>
+                        <td class="px-8 py-5">
+                            <div class="text-slate-800">${t.nama_pt}</div>
+                            <div class="text-[10px] text-slate-400 font-normal italic">${t.alamat_singkat || '-'}</div>
+                        </td>
+                        <td class="px-8 py-5 text-slate-500">${profileMap[t.assigned_to] || '-'}</td>
+                        <td class="px-8 py-5 text-center">
+                            <span class="px-3 py-1 rounded-full text-[9px] uppercase ${isDone ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">
+                                ${t.status}
+                            </span>
+                        </td>
+                        <td class="px-8 py-5 text-center">
+                            <div class="flex justify-center items-center gap-4">
+                                ${t.bukti_url ? `<a href="${t.bukti_url}" target="_blank" class="text-blue-500 hover:text-blue-700" title="Lihat Foto Bukti"><i class="fas fa-image text-lg"></i></a>` : ''}
+                                ${mapsLink ? `<a href="${mapsLink}" target="_blank" class="text-rose-500 hover:text-rose-700" title="Lihat Lokasi GPS"><i class="fas fa-map-marker-alt text-lg"></i></a>` : ''}
+                                
+                                <button onclick="openEditModal('${t.id}')" class="text-amber-500 hover:text-amber-600 transition" title="Edit Tugas">
+                                    <i class="fas fa-pen"></i>
+                                </button>
 
-// Ganti fungsi btnAssign Anda dengan ini agar form otomatis kosong setelah kirim
-document.getElementById('btnAssign').onclick = async () => {
-    const inputs = ['no_surat', 'nama_pt', 'penerima', 'alamat'];
-    const payload = {
-        no_surat: document.getElementById('no_surat').value,
-        nama_pt: document.getElementById('nama_pt').value,
-        penerima: document.getElementById('penerima').value,
-        alamat_singkat: document.getElementById('alamat').value,
-        assigned_to: document.getElementById('select_kurir').value,
-        status: 'pending'
-    };
+                                <button onclick="deleteT('${t.id}')" class="text-slate-300 hover:text-rose-600 transition" title="Hapus Tugas">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+            });
+        }
 
-    if(!payload.nama_pt || !payload.assigned_to) return alert('Nama PT dan Kurir wajib diisi!');
-    
-    const { error } = await supabase.from('tasks').insert([payload]);
-    
-    if(!error) {
-        alert('Tugas Berhasil Dikirim!');
-        // Reset Form
-        inputs.forEach(id => document.getElementById(id).value = '');
-        document.getElementById('select_kurir').value = '';
-        loadTasks();
-    } else {
-        alert('Gagal mengirim: ' + error.message);
-    }
-};
+        // --- LOGIKA EDIT & DELETE ---
+        window.deleteT = async (id) => {
+            if (!confirm('Apakah Anda yakin ingin menghapus tugas ini secara permanen?')) return;
+            const { error } = await supabase.from('tasks').delete().eq('id', id);
+            if (!error) {
+                alert('Tugas berhasil dihapus!');
+                loadTasks();
+            } else {
+                alert('Gagal menghapus: ' + error.message);
+            }
+        };
 
-        // EXPORT PDF
+        window.openEditModal = (id) => {
+            const task = allTasks.find(t => t.id === id);
+            if (!task) return;
+            document.getElementById('edit_id').value = task.id;
+            document.getElementById('edit_no_surat').value = task.no_surat || '';
+            document.getElementById('edit_nama_pt').value = task.nama_pt || '';
+            document.getElementById('edit_alamat').value = task.alamat_singkat || '';
+            document.getElementById('edit_select_kurir').value = task.assigned_to;
+            document.getElementById('editModal').classList.remove('hidden');
+        };
+
+        window.closeEditModal = () => {
+            document.getElementById('editModal').classList.add('hidden');
+        };
+
+        document.getElementById('btnSaveEdit').onclick = async () => {
+            const id = document.getElementById('edit_id').value;
+            const payload = {
+                no_surat: document.getElementById('edit_no_surat').value,
+                nama_pt: document.getElementById('edit_nama_pt').value,
+                alamat_singkat: document.getElementById('edit_alamat').value,
+                assigned_to: document.getElementById('edit_select_kurir').value
+            };
+            const { error } = await supabase.from('tasks').update(payload).eq('id', id);
+            if (!error) {
+                alert('Update Berhasil!');
+                closeEditModal();
+                loadTasks();
+            } else {
+                alert('Gagal update: ' + error.message);
+            }
+        };
+
+        // --- LOGIKA LAMA (KEEP) ---
+        document.getElementById('btnAssign').onclick = async () => {
+            const payload = {
+                no_surat: document.getElementById('no_surat').value,
+                nama_pt: document.getElementById('nama_pt').value,
+                penerima: document.getElementById('penerima').value,
+                alamat_singkat: document.getElementById('alamat').value,
+                assigned_to: document.getElementById('select_kurir').value,
+                status: 'pending'
+            };
+            if(!payload.nama_pt || !payload.assigned_to) return alert('Nama PT dan Kurir wajib diisi!');
+            const { error } = await supabase.from('tasks').insert([payload]);
+            if(!error) {
+                alert('Tugas Berhasil Dikirim!');
+                ['no_surat', 'nama_pt', 'penerima', 'alamat'].forEach(id => document.getElementById(id).value = '');
+                document.getElementById('select_kurir').value = '';
+                loadTasks();
+            } else {
+                alert('Gagal mengirim: ' + error.message);
+            }
+        };
+
         document.getElementById('btnPdf').onclick = () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'mm', 'a4');
             const start = document.getElementById('filterStart').value;
             const end = document.getElementById('filterEnd').value;
-            
             const filtered = allTasks.filter(t => {
                 const dateTugas = t.created_at ? t.created_at.split('T')[0] : "";
                 return (!start || dateTugas >= start) && (!end || dateTugas <= end);
             });
-
             doc.setFontSize(18); doc.text("LAPORAN LOGISTIK - PT KLASE AUTO GRAHA", 14, 20);
             doc.setFontSize(10); doc.text(`Periode: ${start || 'Awal'} s/d ${end || 'Sekarang'}`, 14, 28);
-
-            const rows = filtered.map(t => [
-                t.no_surat,
-                t.created_at ? new Date(t.created_at).toLocaleString('id-ID', {dateStyle:'short'}) : '-',
-                t.tanggal_pengiriman || '-',
-                t.nama_pt,
-                profileMap[t.assigned_to] || '-',
-                t.status.toUpperCase()
-            ]);
-
+            const rows = filtered.map(t => [t.no_surat, t.created_at ? new Date(t.created_at).toLocaleString('id-ID', {dateStyle:'short'}) : '-', t.tanggal_pengiriman || '-', t.nama_pt, profileMap[t.assigned_to] || '-', t.status.toUpperCase()]);
             doc.autoTable({ startY: 35, head: [['No Surat', 'Tgl Terima', 'Tgl Kirim', 'Tujuan', 'Kurir', 'Status']], body: rows });
             doc.save('Laporan_Admin_KAG.pdf');
         };
 
-        // EXPORT EXCEL
         document.getElementById('btnExcel').onclick = () => {
             let csv = ["\uFEFFNo Surat,Waktu Terima,Waktu Kirim,Tujuan,Kurir,Status"];
             allTasks.forEach(t => {
