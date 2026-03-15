@@ -9,13 +9,56 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <style> 
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #fdfdfd; min-height: 100vh; } 
         .glass-header { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
         .gradient-blue { background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); }
         .tab-active { background: white !important; color: #1e40af !important; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .clock-container { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-left: 4px solid #3b82f6; }
+        /* ===== WHATSAPP FLOATING BUTTON ===== */
+        #waFloatingWrapper {
+            animation: floatWA 3s ease-in-out infinite;
+            z-index: 9999 !important;
+        }
+        @keyframes floatWA {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        #waMainBtn {
+            box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.5);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #waMainBtn:hover {
+            box-shadow: 0 20px 35px -5px rgba(34, 197, 94, 0.7);
+            transform: scale(1.05) translateY(-2px);
+        }
+        #waDropdown {
+            transform-origin: bottom right;
+            animation: slideUp 0.2s ease-out;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .wa-option {
+            transition: all 0.2s ease;
+        }
+        .wa-option:hover {
+            transform: translateX(-4px);
+            background: linear-gradient(90deg, #f0fdf4 0%, transparent 100%);
+        }
+        @media (max-width: 640px) {
+            #waFloatingWrapper {
+                bottom: 20px;
+                right: 16px;
+            }
+            #waDropdown {
+                min-width: 240px;
+                right: -10px;
+            }
+        }
+        /* ===== END WHATSAPP CSS ===== */
     </style>
 </head>
 <body class="flex flex-col">
@@ -31,7 +74,7 @@
                     <span class="text-[8px] text-emerald-600 font-bold uppercase tracking-widest">Courier Management</span>
                 </div>
             </div>
-            <button id="btnLogout" class="w-10 h-10 flex items-center justify-center rounded-xl bg-rose-50 text-rose-500">
+            <button id="btnLogout" class="w-10 h-10 flex items-center justify-center rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-100 transition">
                 <i class="fas fa-power-off"></i>
             </button>
         </div>
@@ -72,6 +115,55 @@
         </div>
     </main>
 
+    <!-- ===== FLOATING WHATSAPP BUTTON (DIPINDAH KE ATAS SCRIPT) ===== -->
+    <div id="waFloatingWrapper" class="fixed bottom-6 right-6 z-[9999]">
+        <!-- Main Button -->
+        <button id="waMainBtn" 
+                class="bg-green-500 hover:bg-green-600 text-white rounded-full p-4 shadow-2xl transition-all duration-300 flex items-center justify-center relative"
+                aria-label="Hubungi Admin via WhatsApp"
+                type="button">
+            <i class="fab fa-whatsapp text-3xl"></i>
+            <!-- Badge Notifikasi -->
+            <span class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center animate-pulse border-2 border-white">!</span>
+        </button>
+        
+        <!-- Dropdown Options -->
+        <div id="waDropdown" class="hidden absolute bottom-20 right-0 bg-white rounded-2xl shadow-2xl p-3 min-w-[260px] border border-slate-100">
+            <div class="text-[10px] font-black text-slate-400 uppercase mb-2 px-2 tracking-wider">Hubungi Admin:</div>
+            
+            <a href="#" data-number="6285793117746" data-name="Admin"
+               class="wa-option flex items-center gap-3 px-3 py-2.5 hover:bg-green-50 rounded-xl transition-all group cursor-pointer">
+                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                   <i class="fas fa-user-gear text-green-600"></i>
+                </div>
+                <div class="min-w-0">
+                    <div class="text-sm font-bold text-slate-800 truncate">Admin Shifa</div>
+                    <div class="text-[10px] text-slate-400">Urusan Pengiriman & Tugas</div>
+                </div>
+                <i class="fas fa-chevron-right text-slate-300 ml-auto text-xs"></i>
+            </a>
+            
+            <a href="#" data-number="6285693456415" data-name="Customer Service"
+               class="wa-option flex items-center gap-3 px-3 py-2.5 hover:bg-blue-50 rounded-xl transition-all group cursor-pointer">
+                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-headset text-blue-600"></i>
+                </div>
+                <div class="min-w-0">
+                    <div class="text-sm font-bold text-slate-800 truncate">Customer Service</div>
+                    <div class="text-[10px] text-slate-400">Bantuan Umum & Komplain</div>
+                </div>
+                <i class="fas fa-chevron-right text-slate-300 ml-auto text-xs"></i>
+            </a>
+            
+            <div class="border-t border-slate-100 mt-2 pt-2.5 px-2">
+                <div class="text-[9px] text-slate-400 text-center font-bold">
+                    <i class="fas fa-clock mr-1"></i> 08:00 - 17:00 WIB
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ===== END WHATSAPP BUTTON ===== -->
+
     <script>
     (function() {
         'use strict';
@@ -93,6 +185,9 @@
             await fetchTasks();
             updateSyncBadge();
             window.addEventListener('online', syncOfflineData);
+            
+            // Initialize WhatsApp button after DOM is ready
+            initWhatsAppButton();
         }
 
         function updateClock() {
@@ -131,70 +226,65 @@
             }
         };
 
-        // ... (Bagian atas init, clock, profile tetap sama) ...
+        function renderTasks() {
+            const container = document.getElementById('taskList');
+            const filtered = allTasks.filter(t => t.status === activeFilter);
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="bg-white rounded-[2rem] p-12 text-center text-slate-300 font-bold italic">Belum ada data</div>';
+                return;
+            }
+            container.innerHTML = '';
+            filtered.forEach(t => {
+                const isPending = t.status === 'pending';
 
-function renderTasks() {
-    const container = document.getElementById('taskList');
-    const filtered = allTasks.filter(t => t.status === activeFilter);
-    if (filtered.length === 0) {
-        container.innerHTML = '<div class="bg-white rounded-[2rem] p-12 text-center text-slate-300 font-bold italic">Belum ada data</div>';
-        return;
-    }
-    container.innerHTML = '';
-    filtered.forEach(t => {
-        const isPending = t.status === 'pending';
-        
-        // Perbaikan: Gunakan tanda $ sebelum kurung kurawal
-        const queryMaps = encodeURIComponent(`${t.alamat_singkat || ''} ${t.nama_pt || ''}`);
-        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${queryMaps}`;
+                const queryMaps = encodeURIComponent(`${t.alamat_singkat || ''} ${t.nama_pt || ''}`);
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${queryMaps}`;
 
-        container.innerHTML += `
-            <div class="bg-white rounded-[2rem] shadow-xl border border-slate-50 overflow-hidden mb-4">
-                <div class="p-7">
-                    <span class="text-[10px] font-black text-blue-600 uppercase mb-2 block">${t.no_surat || 'LOGISTICS REF'}</span>
-                    <h3 class="font-black text-xl text-slate-800 mb-4">${t.nama_pt}</h3>
-                    <div class="space-y-3 mb-6 text-sm text-slate-600 font-bold">
-                        <div class="flex gap-3 items-start">
-                            <i class="fas fa-map-pin text-rose-500 mt-1"></i>
-                            <div>
-                                <p>${t.alamat_singkat || '-'}</p>
-                                <a href="${mapsUrl}" target="_blank" class="text-blue-600 text-[10px] font-black uppercase mt-1 flex items-center gap-1">
-                                    <i class="fas fa-directions"></i> BUKA RUTE
-                                </a>
+                container.innerHTML += `
+                    <div class="bg-white rounded-[2rem] shadow-xl border border-slate-50 overflow-hidden mb-4">
+                        <div class="p-7">
+                            <span class="text-[10px] font-black text-blue-600 uppercase mb-2 block">${t.no_surat || 'LOGISTICS REF'}</span>
+                            <h3 class="font-black text-xl text-slate-800 mb-4">${t.nama_pt}</h3>
+                            <div class="space-y-3 mb-6 text-sm text-slate-600 font-bold">
+                                <div class="flex gap-3 items-start">
+                                    <i class="fas fa-map-pin text-rose-500 mt-1"></i>
+                                    <div>
+                                        <p>${t.alamat_singkat || '-'}</p>
+                                        <a href="${mapsUrl}" target="_blank" class="text-blue-600 text-[10px] font-black uppercase mt-1 flex items-center gap-1 hover:underline">
+                                            <i class="fas fa-directions"></i> BUKA RUTE
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="flex gap-3"><i class="fas fa-user-circle text-blue-500 mt-1"></i><p>Penerima: ${t.penerima || '-'}</p></div>
                             </div>
-                        </div>
-                        <div class="flex gap-3"><i class="fas fa-user-circle text-blue-500 mt-1"></i><p>Penerima: ${t.penerima || '-'}</p></div>
-                    </div>
-                    ${isPending ? `
-                        <div class="pt-6 border-t border-slate-50 space-y-4">
-                            <label class="flex flex-col items-center justify-center w-full min-h-[160px] border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 cursor-pointer overflow-hidden relative">
-                                <div id="preview-container-${t.id}" class="absolute inset-0 hidden">
-                                    <img id="img-preview-${t.id}" class="w-full h-full object-cover">
+                            ${isPending ? `
+                                <div class="pt-6 border-t border-slate-50 space-y-4">
+                                    <label class="flex flex-col items-center justify-center w-full min-h-[160px] border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 cursor-pointer overflow-hidden relative hover:border-blue-400 transition">
+                                        <div id="preview-container-${t.id}" class="absolute inset-0 hidden">
+                                            <img id="img-preview-${t.id}" class="w-full h-full object-cover">
+                                        </div>
+                                        <div id="placeholder-${t.id}" class="flex flex-col items-center">
+                                            <i class="fas fa-camera text-2xl text-slate-300 mb-2"></i>
+                                            <p class="text-[10px] font-black text-slate-400 uppercase">Ambil Foto Bukti</p>
+                                        </div>
+                                        <input type="file" id="file-${t.id}" accept="image/*" capture="environment" class="hidden" onchange="previewImage(this, '${t.id}')">
+                                    </label>
+                                    <button onclick="completeTask('${t.id}')" id="btn-${t.id}" class="w-full gradient-blue text-white font-black py-5 rounded-2xl shadow-lg hover:brightness-110 active:scale-[0.98] transition">KONFIRMASI SELESAI</button>
                                 </div>
-                                <div id="placeholder-${t.id}" class="flex flex-col items-center">
-                                    <i class="fas fa-camera text-2xl text-slate-300 mb-2"></i>
-                                    <p class="text-[10px] font-black text-slate-400 uppercase">Ambil Foto Bukti</p>
+                            ` : `
+                                <div class="pt-4 border-t border-slate-50 flex justify-between items-center">
+                                    <span class="text-emerald-500 font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
+                                        <i class="fas fa-check-double"></i> Terkirim
+                                    </span>
+                                    <a href="${t.bukti_url || '#'}" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded-xl font-black text-[10px] uppercase flex items-center gap-1 shadow-md shadow-blue-100 hover:bg-blue-700 transition">
+                                        <i class="fas fa-image"></i> Lihat Bukti Foto
+                                    </a>
                                 </div>
-                                <input type="file" id="file-${t.id}" accept="image/*" capture="environment" class="hidden" onchange="previewImage(this, '${t.id}')">
-                            </label>
-                            <button onclick="completeTask('${t.id}')" id="btn-${t.id}" class="w-full gradient-blue text-white font-black py-5 rounded-2xl shadow-lg">KONFIRMASI SELESAI</button>
+                            `}
                         </div>
-                    ` : `
-                        <div class="pt-4 border-t border-slate-50 flex justify-between items-center">
-                            <span class="text-emerald-500 font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
-                                <i class="fas fa-check-double"></i> Terkirim
-                            </span>
-                            <a href="${t.bukti_url}" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded-xl font-black text-[10px] uppercase flex items-center gap-1 shadow-md shadow-blue-100">
-                                <i class="fas fa-image"></i> Lihat Bukti Foto
-                            </a>
-                        </div>
-                    `}
-                </div>
-            </div>`;
-    });
-}
-
-
+                    </div>`;
+            });
+        }
 
         window.completeTask = async function(id) {
             const fileInput = document.getElementById(`file-${id}`);
@@ -205,10 +295,8 @@ function renderTasks() {
 
             try {
                 const compressedFile = await compressImage(fileInput.files[0]);
-                
-                // PERBAIKAN: Format Tanggal ISO agar diterima Database
                 const sekarangISO = new Date().toISOString(); 
-                
+
                 let coords = "No GPS";
                 try {
                     const pos = await new Promise((resolve, reject) => {
@@ -234,9 +322,9 @@ function renderTasks() {
                     status: 'selesai', 
                     bukti_url: urlData.publicUrl, 
                     location_coords: coords, 
-                    tanggal_pengiriman: sekarangISO // Menggunakan format ISO
+                    tanggal_pengiriman: sekarangISO
                 }).eq('id', id);
-                
+
                 if (dbErr) throw new Error("Gagal Database: " + dbErr.message);
 
                 updateLocalStatus(id);
@@ -304,6 +392,71 @@ function renderTasks() {
             });
         }
 
+        // ===== WHATSAPP FLOATING BUTTON LOGIC =====
+        function initWhatsAppButton() {
+            const waMainBtn = document.getElementById('waMainBtn');
+            const waDropdown = document.getElementById('waDropdown');
+            
+            if (!waMainBtn || !waDropdown) {
+                console.log('⚠️ WhatsApp elements not found');
+                return;
+            }
+            
+            console.log('✅ WhatsApp button initialized');
+            
+            // Toggle dropdown
+            waMainBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                waDropdown.classList.toggle('hidden');
+                this.classList.toggle('rotate-12');
+            });
+            
+            // Close when click outside
+            document.addEventListener('click', function() {
+                waDropdown.classList.add('hidden');
+                waMainBtn.classList.remove('rotate-12');
+            });
+            
+            // Prevent dropdown close when clicking inside it
+            waDropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+            
+            // Handle admin selection
+            document.querySelectorAll('.wa-option').forEach(option => {
+                option.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const adminNumber = this.dataset.number;
+                    const adminName = this.dataset.name;
+                    const userName = localStorage.getItem('full_name') || 'Kurir';
+                    const userId = localStorage.getItem('userId') || '-';
+                    
+                    // Template pesan
+                    const message = 
+`Halo ${adminName} PT Klase Auto Graha 👋
+
+Saya: ${userName} (ID: ${userId})
+Tanggal: ${new Date().toLocaleDateString('id-ID')}
+
+Mohon bantuannya untuk:
+[Tulis pesan Anda di sini]
+
+Terima kasih.`;
+                    
+                    // Encode & open WhatsApp
+                    const waURL = `https://wa.me/${adminNumber}?text=${encodeURIComponent(message)}`;
+                    window.open(waURL, '_blank');
+                    
+                    // Close dropdown
+                    waDropdown.classList.add('hidden');
+                    
+                    console.log(`📱 WA clicked: ${adminName}`);
+                });
+            });
+        }
+        // ===== END WHATSAPP LOGIC =====
+        
         document.getElementById('btnLogout').onclick = () => { localStorage.clear(); window.location.replace('index.html'); };
         document.addEventListener('DOMContentLoaded', init);
     })();
