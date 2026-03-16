@@ -305,16 +305,24 @@
 
         window.completeTask = async function(id) {
     const datetimeInput = document.getElementById(`datetime-${id}`);
-    const keteranganInput = document.getElementById(`keterangan-${id}`); // Tambah ini
+    const keteranganInput = document.getElementById(`keterangan-${id}`);
+    // BARIS DI BAWAH INI YANG HARUS DITAMBAHKAN:
+    const fileInput = document.getElementById(`file-${id}`); 
     
     const manualDate = datetimeInput ? datetimeInput.value : null;
-    const keterangan = keteranganInput ? keteranganInput.value : ''; // Tambah ini
+    const keterangan = keteranganInput ? keteranganInput.value : '';
     
+    // Validasi input
     if (!manualDate) {
         return alert('⚠️ Masukkan tanggal dan waktu penyelesaian terlebih dahulu!');
     }
+    
+    // Validasi apakah file sudah dipilih
+    if (!fileInput || !fileInput.files[0]) {
+        return alert('⚠️ Silakan ambil foto bukti terlebih dahulu!');
+    }
 
-    // ... (validasi tanggal tetap sama) ...
+    // ... sisa kode di bawahnya tetap sama ...
 
     const btn = document.getElementById(`btn-${id}`);
     btn.disabled = true; 
