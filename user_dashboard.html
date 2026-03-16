@@ -281,6 +281,11 @@
 
         document.getElementById('btnLogout').onclick = () => { localStorage.clear(); window.location.replace('index.html'); };
         init();
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js');
+  });
+}
     })();
     </script>
 </body>
