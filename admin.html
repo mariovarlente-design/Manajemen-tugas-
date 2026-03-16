@@ -20,7 +20,7 @@
         .gradient-emerald { background: linear-gradient(135deg, #10b981 0%, #065f46 100%); }
         .gradient-rose { background: linear-gradient(135deg, #f43f5e 0%, #9f1239 100%); }
         #taskTable thead th { position: sticky; top: 0; z-index: 10; background: #f1f5f9; }
-        
+
         /* Modal transition fix - tanpa conflict dengan class 'hidden' */
         #editModal { 
             transition: opacity 0.2s ease; 
@@ -54,7 +54,6 @@
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow">
 
-        <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="gradient-blue p-6 rounded-[2rem] shadow-xl text-white">
                 <p class="text-blue-100 text-[10px] font-bold uppercase mb-1">Total Tugas</p>
@@ -70,9 +69,7 @@
             </div>
         </div>
 
-        <!-- Form + Export Section -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-            <!-- Form Buat Tugas -->
             <div class="lg:col-span-2 bg-white rounded-[2rem] shadow-sm border border-slate-200 p-8">
                 <h2 class="text-lg font-bold text-slate-800 mb-6 flex items-center">
                     <i class="fas fa-plus-circle text-blue-600 mr-2"></i> Buat Tugas Baru
@@ -93,7 +90,6 @@
                 </div>
             </div>
 
-            <!-- Export Panel -->
             <div class="bg-slate-900 rounded-[2rem] p-8 text-white shadow-xl">
                 <h2 class="text-lg font-bold mb-6 flex items-center"><i class="fas fa-file-export mr-2 text-blue-400"></i> Export Laporan</h2>
                 <div class="space-y-4">
@@ -121,7 +117,6 @@
             </div>
         </div>
 
-        <!-- Table Section -->
         <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left" id="taskTable">
@@ -141,7 +136,6 @@
             </div>
         </div>
 
-        <!-- 🔧 EDIT MODAL (DIPERBAIKI + TAMBAH FIELD PENERIMA) -->
         <div id="editModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div class="bg-white w-full max-w-lg rounded-[2rem] p-8 shadow-2xl">
                 <div class="flex justify-between items-center mb-6">
@@ -160,7 +154,6 @@
                         <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Nama PT Tujuan</label>
                         <input type="text" id="edit_nama_pt" class="w-full bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
-                    <!-- ✅ FIELD PENERIMA -->
                     <div>
                         <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Nama Penerima</label>
                         <input type="text" id="edit_penerima" placeholder="Nama Penerima" class="w-full bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500">
@@ -200,7 +193,7 @@
             if (localStorage.getItem('role') !== 'admin') { window.location.href = 'index.html'; return; }
             await loadProfiles();
             await loadTasks();
-            // Realtime Update
+            // Realtime Update - Disesuaikan agar sinkron dengan dashboard kurir
             supabase.channel('admin-sync').on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => loadTasks()).subscribe();
         }
 
@@ -209,7 +202,6 @@
             const select = document.getElementById('select_kurir');
             const editSelect = document.getElementById('edit_select_kurir');
 
-            // Reset dulu agar tidak duplikat saat reload
             select.innerHTML = '<option value="">-- Pilih Kurir --</option>';
             editSelect.innerHTML = '<option value="">-- Pilih Kurir --</option>';
 
@@ -251,11 +243,34 @@
             document.getElementById('statSelesai').innerText = tasks.filter(t => t.status === 'selesai').length;
         }
 
-        function renderTable(dataList) {
+                        function renderTable(dataList) {
             const tbody = document.getElementById('taskBody');
             tbody.innerHTML = '';
+            
             dataList.forEach(t => {
                 const isDone = t.status === 'selesai';
+                
+                // --- LOGIKA TANGGAL ---
+                const formatTanggal = (isoStr) => {
+                    if (!isoStr) return null;
+                    const d = new Date(isoStr);
+                    // Cek apakah tanggal valid
+                    if (isNaN(d.getTime())) return isoStr.split(' ')[0]; // fallback jika format bukan ISO
+                    return d.toLocaleDateString('id-ID', {
+                        day: '2-digit', 
+                        month: '2-digit', 
+                        year: '2-digit'
+                    });
+                };
+
+                const postingLabel = formatTanggal(t.created_at) || '-';
+                
+                // Gunakan t.tanggal_pengiriman untuk waktu selesai
+                let selesaiLabel = 'Belum';
+                if (isDone) {
+                    selesaiLabel = t.tanggal_pengiriman ? formatTanggal(t.tanggal_pengiriman) : 'Selesai';
+                }
+
                 const mapsLink = t.location_coords && t.location_coords !== "No GPS" 
                     ? `https://www.google.com/maps?q=${encodeURIComponent(t.location_coords)}` 
                     : null;
@@ -263,8 +278,8 @@
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition text-xs font-bold">
                         <td class="px-8 py-5 text-blue-600">${t.no_surat || '-'}</td>
-                        <td class="px-8 py-5 text-slate-400 font-medium">${t.created_at ? new Date(t.created_at).toLocaleString('id-ID') : '-'}</td>
-                        <td class="px-8 py-5 text-emerald-600">${t.tanggal_pengiriman || 'Belum'}</td>
+                        <td class="px-8 py-5 text-slate-400 font-medium">${postingLabel}</td>
+                        <td class="px-8 py-5 text-emerald-600">${selesaiLabel}</td>
                         <td class="px-8 py-5">
                             <div class="text-slate-800">${t.nama_pt || '-'}</div>
                             <div class="text-[10px] text-slate-400 font-normal italic">${t.penerima ? '👤 '+t.penerima : ''} ${t.alamat_singkat ? '• '+t.alamat_singkat : ''}</div>
@@ -277,24 +292,17 @@
                         </td>
                         <td class="px-8 py-5 text-center">
                             <div class="flex justify-center items-center gap-4">
-                                ${t.bukti_url ? `<a href="${t.bukti_url}" target="_blank" class="text-blue-500 hover:text-blue-700" title="Lihat Foto Bukti"><i class="fas fa-image text-lg"></i></a>` : ''}
-                                ${mapsLink ? `<a href="${mapsLink}" target="_blank" class="text-rose-500 hover:text-rose-700" title="Lihat Lokasi GPS"><i class="fas fa-map-marker-alt text-lg"></i></a>` : ''}
-                                
-                                <button onclick="openEditModal('${t.id}')" class="text-amber-500 hover:text-amber-600 transition cursor-pointer" title="Edit Tugas" type="button">
-                                    <i class="fas fa-pen"></i>
-                                </button>
-
-                                <button onclick="deleteT('${t.id}')" class="text-slate-300 hover:text-rose-600 transition cursor-pointer" title="Hapus Tugas" type="button">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                                ${t.bukti_url ? `<a href="${t.bukti_url}" target="_blank" class="text-blue-500 hover:text-blue-700"><i class="fas fa-image text-lg"></i></a>` : ''}
+                                ${mapsLink ? `<a href="${mapsLink}" target="_blank" class="text-rose-500 hover:text-rose-700"><i class="fas fa-map-marker-alt text-lg"></i></a>` : ''}
+                                <button onclick="openEditModal('${t.id}')" class="text-amber-500 hover:text-amber-600 transition cursor-pointer"><i class="fas fa-pen"></i></button>
+                                <button onclick="deleteT('${t.id}')" class="text-slate-300 hover:text-rose-600 transition cursor-pointer"><i class="fas fa-trash"></i></button>
                             </div>
                         </td>
                     </tr>`;
             });
         }
 
-        // ==================== LOGIKA EDIT & DELETE ====================
-        
+
         window.deleteT = async (id) => {
             if (!confirm('Apakah Anda yakin ingin menghapus tugas ini secara permanen?')) return;
             const { error } = await supabase.from('tasks').delete().eq('id', id);
@@ -308,53 +316,28 @@
 
         window.openEditModal = async (id) => {
             try {
-                console.log('🔍 Opening edit modal for ID:', id);
-                
                 let task = allTasks.find(t => String(t.id) === String(id));
-                
                 if (!task) {
-                    console.log('⚠️ Task not in cache, fetching from Supabase...');
-                    const { data, error } = await supabase
-                        .from('tasks')
-                        .select('*')
-                        .eq('id', id)
-                        .single();
-                    if (error || !data) {
-                        console.error('❌ Failed to fetch task:', error);
-                        alert('Data tugas tidak ditemukan!');
-                        return;
-                    }
+                    const { data } = await supabase.from('tasks').select('*').eq('id', id).single();
                     task = data;
                 }
+                if (!task) return;
 
-                document.getElementById('edit_id').value = task.id || '';
+                document.getElementById('edit_id').value = task.id;
                 document.getElementById('edit_no_surat').value = task.no_surat || '';
                 document.getElementById('edit_nama_pt').value = task.nama_pt || '';
                 document.getElementById('edit_penerima').value = task.penerima || '';
                 document.getElementById('edit_alamat').value = task.alamat_singkat || '';
                 document.getElementById('edit_select_kurir').value = task.assigned_to || '';
-                
-                const modal = document.getElementById('editModal');
-                modal.classList.remove('hidden');
-                void modal.offsetWidth;
-                
-                setTimeout(() => {
-                    const firstInput = document.getElementById('edit_no_surat');
-                    if (firstInput) firstInput.focus();
-                }, 100);
-                
-                console.log('✅ Modal opened successfully');
-                
+
+                document.getElementById('editModal').classList.remove('hidden');
             } catch (err) {
-                console.error('❌ Error opening modal:', err);
-                alert('Gagal membuka form edit: ' + err.message);
+                alert('Gagal membuka form edit');
             }
         };
 
         window.closeEditModal = () => {
-            const modal = document.getElementById('editModal');
-            modal.classList.add('hidden');
-            document.getElementById('edit_id').value = '';
+            document.getElementById('editModal').classList.add('hidden');
         };
 
         document.getElementById('btnSaveEdit').onclick = async () => {
@@ -366,31 +349,17 @@
                 alamat_singkat: document.getElementById('edit_alamat').value,
                 assigned_to: document.getElementById('edit_select_kurir').value
             };
-            
-            if (!payload.nama_pt) {
-                alert('Nama PT Tujuan wajib diisi!');
-                return;
-            }
-            
+
             const { error } = await supabase.from('tasks').update(payload).eq('id', id);
             if (!error) {
                 alert('✅ Update Berhasil!');
                 closeEditModal();
                 loadTasks();
             } else {
-                console.error('Update error:', error);
                 alert('❌ Gagal update: ' + error.message);
             }
         };
 
-        document.getElementById('editModal').addEventListener('click', (e) => {
-            if (e.target.id === 'editModal') {
-                closeEditModal();
-            }
-        });
-
-        // ==================== LOGIKA BUAT TUGAS BARU ====================
-        
         document.getElementById('btnAssign').onclick = async () => {
             const payload = {
                 no_surat: document.getElementById('no_surat').value,
@@ -407,96 +376,69 @@
                 ['no_surat', 'nama_pt', 'penerima', 'alamat'].forEach(id => document.getElementById(id).value = '');
                 document.getElementById('select_kurir').value = '';
                 loadTasks();
-            } else {
-                alert('Gagal mengirim: ' + error.message);
             }
         };
 
-        // ==================== ✅ EXPORT PDF (DITAMBAH KOLOM PENERIMA) ====================
-        
         document.getElementById('btnPdf').onclick = () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'mm', 'a4');
             const start = document.getElementById('filterStart').value;
             const end = document.getElementById('filterEnd').value;
+            
             const filtered = allTasks.filter(t => {
                 const dateTugas = t.created_at ? t.created_at.split('T')[0] : "";
                 return (!start || dateTugas >= start) && (!end || dateTugas <= end);
             });
-            
-            // Header
+
             doc.setFontSize(18); 
             doc.text("LAPORAN Tugas Kurir - PT KLASE AUTO RENTAL", 14, 20);
-            doc.setFontSize(10); 
-            doc.text(`Periode: ${start || 'Awal'} s/d ${end || 'Sekarang'}`, 14, 28);
-            
-            // ✅ Data rows dengan kolom PENERIMA
+
             const rows = filtered.map(t => [
                 t.no_surat || '-', 
-                t.created_at ? new Date(t.created_at).toLocaleString('id-ID', {dateStyle:'short'}) : '-', 
+                t.created_at ? new Date(t.created_at).toLocaleDateString('id-ID') : '-', 
                 t.tanggal_pengiriman || '-', 
                 t.nama_pt || '-', 
-                t.penerima || '-',  // ✅ KOLOM PENERIMA DITAMBAHKAN
+                t.penerima || '-',
                 profileMap[t.assigned_to] || '-', 
                 t.status.toUpperCase()
             ]);
-            
-            // ✅ Table header dengan kolom PENERIMA
+
             doc.autoTable({ 
-                startY: 35, 
+                startY: 30, 
                 head: [['No Surat', 'Tgl Terima', 'Tgl Kirim', 'Tujuan', 'Penerima', 'Kurir', 'Status']], 
                 body: rows,
                 theme: 'grid',
-                headStyles: { fillColor: [37, 99, 235] },
-                styles: { fontSize: 8 }
+                headStyles: { fillColor: [37, 99, 235] }
             });
-            
-            doc.save(`Laporan_Admin_KAG_${start || 'All'}_${end || 'Now'}.pdf`);
+
+            doc.save(`Laporan_Admin_KAG.pdf`);
         };
 
-        // ==================== ✅ EXPORT EXCEL/CSV (DITAMBAH KOLOM PENERIMA) ====================
-        
         document.getElementById('btnExcel').onclick = () => {
-            // ✅ Header CSV dengan kolom PENERIMA
             let csv = ["\uFEFFNo Surat,Waktu Terima,Waktu Kirim,Tujuan,Penerima,Kurir,Status"];
-            
             allTasks.forEach(t => {
-                // Escape karakter khusus untuk CSV (koma, kutip, newline)
-                const escapeCsv = (val) => {
-                    if (val === null || val === undefined) return '""';
-                    const str = String(val);
-                    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-                        return `"${str.replace(/"/g, '""')}"`;
-                    }
-                    return `"${str}"`;
-                };
-                
                 csv.push([
-                    escapeCsv(t.no_surat),
-                    escapeCsv(t.created_at),
-                    escapeCsv(t.tanggal_pengiriman || '-'),
-                    escapeCsv(t.nama_pt),
-                    escapeCsv(t.penerima || '-'),  // ✅ KOLOM PENERIMA DITAMBAHKAN
-                    escapeCsv(profileMap[t.assigned_to]),
-                    escapeCsv(t.status)
+                    t.no_surat || '-',
+                    t.created_at || '-',
+                    t.tanggal_pengiriman || '-',
+                    t.nama_pt || '-',
+                    t.penerima || '-',
+                    profileMap[t.assigned_to] || '-',
+                    t.status
                 ].join(','));
             });
-            
             const blob = new Blob([csv.join("\n")], { type: "text/csv;charset=utf-8" });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = `Data_Admin_KAG_${new Date().toISOString().split('T')[0]}.csv`;
+            link.download = `Laporan_Kurir.csv`;
             link.click();
         };
 
-        // ==================== FILTER & LOGOUT ====================
-        
         document.getElementById('filterStart').onchange = applyFilters;
         document.getElementById('filterEnd').onchange = applyFilters;
         document.getElementById('searchInput').oninput = applyFilters;
         document.getElementById('btnLogout').onclick = () => { localStorage.clear(); window.location.href='index.html'; };
 
-        // Jalankan init
         init();
     })();
     </script>
