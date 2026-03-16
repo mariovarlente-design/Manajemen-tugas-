@@ -2,14 +2,13 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Sistem Manajemen Pengiriman - PT KAR</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#007bff">   
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Control Panel - PT KAG</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
@@ -17,20 +16,9 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; }
         .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); }
         .gradient-blue { background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); }
-        .gradient-emerald { background: linear-gradient(135deg, #10b981 0%, #065f46 100%); }
         .gradient-rose { background: linear-gradient(135deg, #f43f5e 0%, #9f1239 100%); }
-        #taskTable thead th { position: sticky; top: 0; z-index: 10; background: #f1f5f9; }
-
-        /* Modal transition fix - tanpa conflict dengan class 'hidden' */
-        #editModal { 
-            transition: opacity 0.2s ease; 
-        }
-        #editModal:not(.hidden) { 
-            opacity: 1; 
-        }
-        #editModal.hidden { 
-            opacity: 0; 
-        }
+        .gradient-emerald { background: linear-gradient(135deg, #10b981 0%, #065f46 100%); }
+        #editModal { transition: all 0.3s ease; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -42,12 +30,10 @@
                     <img src="https://oyakbndsejhpqsvycdud.supabase.co/storage/v1/object/public/logo/fsimage%20(1).png" class="h-10 mr-3" alt="Logo">
                     <div>
                         <span class="font-bold text-slate-900 block leading-tight uppercase">PT Klase Auto Graha</span>
-                        <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Admin Control Panel</span>
+                        <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Courier Admin Panel</span>
                     </div>
                 </div>
-                <div class="flex items-center gap-4">
-                    <button id="btnLogout" class="bg-rose-50 text-rose-600 px-4 py-2 rounded-xl font-bold text-sm hover:bg-rose-100 transition">Logout</button>
-                </div>
+                <button id="btnLogout" class="bg-rose-50 text-rose-600 px-4 py-2 rounded-xl font-bold text-sm hover:bg-rose-100 transition">Logout</button>
             </div>
         </div>
     </nav>
@@ -60,11 +46,11 @@
                 <h3 id="statTotal" class="text-4xl font-extrabold">0</h3>
             </div>
             <div class="gradient-rose p-6 rounded-[2rem] shadow-xl text-white">
-                <p class="text-rose-100 text-[10px] font-bold uppercase mb-1">Menunggu (Pending)</p>
+                <p class="text-rose-100 text-[10px] font-bold uppercase mb-1">Pending</p>
                 <h3 id="statPending" class="text-4xl font-extrabold">0</h3>
             </div>
             <div class="gradient-emerald p-6 rounded-[2rem] shadow-xl text-white">
-                <p class="text-emerald-100 text-[10px] font-bold uppercase mb-1">Berhasil Terkirim</p>
+                <p class="text-emerald-100 text-[10px] font-bold uppercase mb-1">Selesai</p>
                 <h3 id="statSelesai" class="text-4xl font-extrabold">0</h3>
             </div>
         </div>
@@ -76,58 +62,43 @@
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input type="text" id="no_surat" placeholder="No Surat / Referensi" class="bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500">
-                    <select id="select_kurir" class="w-full bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
-                        <option value="">-- Pilih Kurir --</option>
-                    </select>
+                    <select id="select_kurir" class="bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500"></select>
                     <input type="text" id="nama_pt" placeholder="Nama PT Tujuan" class="bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500">
                     <input type="text" id="penerima" placeholder="Nama Penerima" class="bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500">
-                    <div class="md:col-span-2">
-                        <input type="text" id="alamat" placeholder="Alamat Detail Pengiriman" class="w-full bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
+                    <input type="text" id="alamat" placeholder="Alamat Detail" class="md:col-span-2 bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
-                <div class="mt-6">
-                    <button id="btnAssign" class="w-full gradient-blue text-white font-bold py-4 rounded-xl shadow-lg transition hover:brightness-110 uppercase tracking-widest">Kirim Tugas Ke Kurir</button>
-                </div>
+                <button id="btnAssign" class="w-full mt-6 gradient-blue text-white font-bold py-4 rounded-xl shadow-lg transition hover:brightness-110 uppercase tracking-widest">Assign Kurir</button>
             </div>
 
             <div class="bg-slate-900 rounded-[2rem] p-8 text-white shadow-xl">
-                <h2 class="text-lg font-bold mb-6 flex items-center"><i class="fas fa-file-export mr-2 text-blue-400"></i> Export Laporan</h2>
+                <h2 class="text-lg font-bold mb-6 flex items-center"><i class="fas fa-filter mr-2 text-blue-400"></i> Filter & Laporan</h2>
                 <div class="space-y-4">
                     <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Mulai</label>
-                            <input type="date" id="filterStart" class="w-full bg-slate-800 border-0 rounded-xl px-3 py-2 text-xs text-white">
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Sampai</label>
-                            <input type="date" id="filterEnd" class="w-full bg-slate-800 border-0 rounded-xl px-3 py-2 text-xs text-white">
-                        </div>
+                        <input type="date" id="filterStart" class="bg-slate-800 border-0 rounded-xl px-3 py-2 text-xs text-white">
+                        <input type="date" id="filterEnd" class="bg-slate-800 border-0 rounded-xl px-3 py-2 text-xs text-white">
                     </div>
-                    <input type="text" id="searchInput" placeholder="Cari PT atau No Surat..." class="w-full bg-slate-800 border-0 rounded-xl px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-
-                    <div class="pt-4 space-y-2">
-                        <button id="btnPdf" class="w-full bg-rose-600 hover:bg-rose-700 py-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
-                            <i class="fas fa-file-pdf"></i> DOWNLOAD PDF
-                        </button>
-                        <button id="btnExcel" class="w-full bg-emerald-600 hover:bg-emerald-700 py-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
-                            <i class="fas fa-file-excel"></i> DOWNLOAD EXCEL
-                        </button>
-                    </div>
+                    <input type="text" id="searchInput" placeholder="Cari No Surat / PT..." class="w-full bg-slate-800 border-0 rounded-xl px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                    <button id="btnPdf" class="w-full bg-rose-600 hover:bg-rose-700 py-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
+                        <i class="fas fa-file-pdf"></i> PDF LANDSCAPE
+                    </button>
+                    <button id="btnExcel" class="w-full bg-emerald-600 hover:bg-emerald-700 py-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
+                        <i class="fas fa-file-excel"></i> EXCEL / CSV
+                    </button>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden mb-12">
             <div class="overflow-x-auto">
-                <table class="w-full text-left" id="taskTable">
+                <table class="w-full text-left">
                     <thead>
                         <tr class="bg-slate-50 text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">
                             <th class="px-8 py-4">No Surat</th>
-                            <th class="px-8 py-4">Waktu Posting</th>
-                            <th class="px-8 py-4">Waktu Selesai</th>
+                            <th class="px-8 py-4">Posting</th>
                             <th class="px-8 py-4">Tujuan</th>
                             <th class="px-8 py-4">Kurir</th>
-                            <th class="px-8 py-4 text-center">Status</th>
+                            <th class="px-8 py-4">Status</th>
+                            <th class="px-8 py-4">Keterangan</th>
                             <th class="px-8 py-4 text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -135,53 +106,44 @@
                 </table>
             </div>
         </div>
+    </main>
 
-        <div id="editModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div class="bg-white w-full max-w-lg rounded-[2rem] p-8 shadow-2xl">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold text-slate-800">Edit Detail Tugas</h2>
-                    <button onclick="closeEditModal()" class="text-slate-400 hover:text-rose-500 transition" type="button" aria-label="Tutup">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
+    <div id="editModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden">
+            <div class="p-8">
+                <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                    <i class="fas fa-pen-to-square text-blue-600"></i> Edit Tugas
+                </h3>
                 <input type="hidden" id="edit_id">
                 <div class="space-y-4">
                     <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">No Surat</label>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">No Surat</label>
                         <input type="text" id="edit_no_surat" class="w-full bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Nama PT Tujuan</label>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Nama PT</label>
                         <input type="text" id="edit_nama_pt" class="w-full bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Nama Penerima</label>
-                        <input type="text" id="edit_penerima" placeholder="Nama Penerima" class="w-full bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Penerima</label>
+                        <input type="text" id="edit_penerima" class="w-full bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Alamat</label>
-                        <input type="text" id="edit_alamat" class="w-full bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Pilih Kurir</label>
-                        <select id="edit_select_kurir" class="w-full bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500"></select>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Keterangan (Admin/Kurir)</label>
+                        <textarea id="edit_keterangan" class="w-full bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500 h-24 resize-none"></textarea>
                     </div>
                 </div>
-                <div class="mt-8 flex gap-3">
-                    <button onclick="closeEditModal()" class="flex-1 py-4 text-slate-500 font-bold uppercase tracking-widest text-xs hover:bg-slate-100 rounded-xl transition" type="button">Batal</button>
-                    <button id="btnSaveEdit" class="flex-1 gradient-blue text-white py-4 rounded-xl font-bold shadow-lg uppercase tracking-widest text-xs hover:brightness-110 transition" type="button">Simpan Perubahan</button>
+                <div class="flex gap-3 mt-8">
+                    <button onclick="closeEdit()" class="flex-1 py-3 font-bold text-slate-400 hover:text-slate-600 transition">Batal</button>
+                    <button onclick="saveEdit()" class="flex-1 gradient-blue text-white py-3 rounded-xl font-bold shadow-lg">Simpan</button>
                 </div>
             </div>
         </div>
-
-    </main>
-
-    <footer class="py-10 text-center">
-        <p class="text-[9px] text-slate-300 font-black uppercase tracking-[0.4em]">PT Klase Auto Graha ● 2026 ● rionurmansyah</p>
-    </footer>
+    </div>
 
     <script>
     (function() {
+        'use strict';
         const SUPABASE_URL = 'https://oyakbndsejhpqsvycdud.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95YWtibmRzZWpocHFzdnljZHVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzODYwMjksImV4cCI6MjA4ODk2MjAyOX0.oH7XK00yZNKAuDF2GnXtdU3PUYRWtMQ4I43Q13AC9KE';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -193,32 +155,34 @@
             if (localStorage.getItem('role') !== 'admin') { window.location.href = 'index.html'; return; }
             await loadProfiles();
             await loadTasks();
-            // Realtime Update - Disesuaikan agar sinkron dengan dashboard kurir
-            supabase.channel('admin-sync').on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => loadTasks()).subscribe();
+            
+            // Listener Realtime
+            supabase.channel('db-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => loadTasks()).subscribe();
+            
+            // Event Filter
+            document.getElementById('searchInput').oninput = applyFilters;
+            document.getElementById('filterStart').onchange = applyFilters;
+            document.getElementById('filterEnd').onchange = applyFilters;
         }
 
         async function loadProfiles() {
             const { data } = await supabase.from('profiles').select('id, full_name');
             const select = document.getElementById('select_kurir');
-            const editSelect = document.getElementById('edit_select_kurir');
-
             select.innerHTML = '<option value="">-- Pilih Kurir --</option>';
-            editSelect.innerHTML = '<option value="">-- Pilih Kurir --</option>';
-
             if (data) {
                 data.forEach(p => {
                     profileMap[p.id] = p.full_name;
-                    const optionHtml = `<option value="${p.id}">${p.full_name}</option>`;
-                    select.innerHTML += optionHtml;
-                    editSelect.innerHTML += optionHtml;
+                    select.innerHTML += `<option value="${p.id}">${p.full_name}</option>`;
                 });
             }
         }
 
         async function loadTasks() {
-            const { data } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
-            allTasks = data || [];
-            applyFilters();
+            const { data, error } = await supabase.from('tasks').select('*').order('created_at', { ascending: false });
+            if (!error) {
+                allTasks = data;
+                applyFilters();
+            }
         }
 
         function applyFilters() {
@@ -226,11 +190,11 @@
             const end = document.getElementById('filterEnd').value;
             const search = document.getElementById('searchInput').value.toLowerCase();
 
-            let filtered = allTasks.filter(t => {
+            const filtered = allTasks.filter(t => {
                 const dateTugas = t.created_at ? t.created_at.split('T')[0] : "";
-                const dateMatch = (!start || dateTugas >= start) && (!end || dateTugas <= end);
-                const searchMatch = (t.nama_pt?.toLowerCase().includes(search)) || (t.no_surat?.toLowerCase().includes(search));
-                return dateMatch && searchMatch;
+                const matchDate = (!start || dateTugas >= start) && (!end || dateTugas <= end);
+                const matchSearch = (t.nama_pt?.toLowerCase().includes(search)) || (t.no_surat?.toLowerCase().includes(search));
+                return matchDate && matchSearch;
             });
 
             renderTable(filtered);
@@ -243,123 +207,46 @@
             document.getElementById('statSelesai').innerText = tasks.filter(t => t.status === 'selesai').length;
         }
 
-                        function renderTable(dataList) {
+        function renderTable(data) {
             const tbody = document.getElementById('taskBody');
             tbody.innerHTML = '';
-            
-            dataList.forEach(t => {
+            data.forEach(t => {
                 const isDone = t.status === 'selesai';
+                const tgl = t.created_at ? new Date(t.created_at).toLocaleDateString('id-ID') : '-';
                 
-                // --- LOGIKA TANGGAL ---
-                const formatTanggal = (isoStr) => {
-                    if (!isoStr) return null;
-                    const d = new Date(isoStr);
-                    // Cek apakah tanggal valid
-                    if (isNaN(d.getTime())) return isoStr.split(' ')[0]; // fallback jika format bukan ISO
-                    return d.toLocaleDateString('id-ID', {
-                        day: '2-digit', 
-                        month: '2-digit', 
-                        year: '2-digit'
-                    });
-                };
-
-                const postingLabel = formatTanggal(t.created_at) || '-';
-                
-                // Gunakan t.tanggal_pengiriman untuk waktu selesai
-                let selesaiLabel = 'Belum';
-                if (isDone) {
-                    selesaiLabel = t.tanggal_pengiriman ? formatTanggal(t.tanggal_pengiriman) : 'Selesai';
-                }
-
-                const mapsLink = t.location_coords && t.location_coords !== "No GPS" 
-                    ? `https://www.google.com/maps?q=${encodeURIComponent(t.location_coords)}` 
-                    : null;
-
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition text-xs font-bold">
+                    <tr class="hover:bg-slate-50 transition text-[11px] font-bold">
                         <td class="px-8 py-5 text-blue-600">${t.no_surat || '-'}</td>
-                        <td class="px-8 py-5 text-slate-400 font-medium">${postingLabel}</td>
-                        <td class="px-8 py-5 text-emerald-600">${selesaiLabel}</td>
+                        <td class="px-8 py-5 text-slate-400 font-medium">${tgl}</td>
                         <td class="px-8 py-5">
                             <div class="text-slate-800">${t.nama_pt || '-'}</div>
-                            <div class="text-[10px] text-slate-400 font-normal italic">${t.penerima ? '👤 '+t.penerima : ''} ${t.alamat_singkat ? '• '+t.alamat_singkat : ''}</div>
+                            <div class="text-[9px] text-slate-400 font-normal italic">${t.penerima || '-'}</div>
                         </td>
-                        <td class="px-8 py-5 text-slate-500">${profileMap[t.assigned_to] || '-'}</td>
-                        <td class="px-8 py-5 text-center">
+                        <td class="px-8 py-5 text-slate-500">${profileMap[t.assigned_to] || 'Kurir Keluar'}</td>
+                        <td class="px-8 py-5">
                             <span class="px-3 py-1 rounded-full text-[9px] uppercase ${isDone ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">
                                 ${t.status}
                             </span>
                         </td>
-                        <td class="px-8 py-5 text-center">
-                            <div class="flex justify-center items-center gap-4">
-                                ${t.bukti_url ? `<a href="${t.bukti_url}" target="_blank" class="text-blue-500 hover:text-blue-700"><i class="fas fa-image text-lg"></i></a>` : ''}
-                                ${mapsLink ? `<a href="${mapsLink}" target="_blank" class="text-rose-500 hover:text-rose-700"><i class="fas fa-map-marker-alt text-lg"></i></a>` : ''}
-                                <button onclick="openEditModal('${t.id}')" class="text-amber-500 hover:text-amber-600 transition cursor-pointer"><i class="fas fa-pen"></i></button>
-                                <button onclick="deleteT('${t.id}')" class="text-slate-300 hover:text-rose-600 transition cursor-pointer"><i class="fas fa-trash"></i></button>
+                        <td class="px-8 py-5 text-slate-500 font-normal italic max-w-[150px] truncate" title="${t.keterangan || '-'}">
+                            ${t.keterangan || '-'}
+                        </td>
+                        <td class="px-8 py-5">
+                            <div class="flex justify-center gap-4">
+                                ${t.bukti_url ? `<a href="${t.bukti_url}" target="_blank" class="text-blue-500"><i class="fas fa-image"></i></a>` : ''}
+                                <button onclick="openEdit('${t.id}', '${t.no_surat||''}', '${t.nama_pt||''}', '${t.penerima||''}', '${t.keterangan||''}')" class="text-amber-500 hover:text-amber-600">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteTask('${t.id}')" class="text-slate-300 hover:text-rose-600 transition">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>`;
             });
         }
 
-
-        window.deleteT = async (id) => {
-            if (!confirm('Apakah Anda yakin ingin menghapus tugas ini secara permanen?')) return;
-            const { error } = await supabase.from('tasks').delete().eq('id', id);
-            if (!error) {
-                alert('Tugas berhasil dihapus!');
-                loadTasks();
-            } else {
-                alert('Gagal menghapus: ' + error.message);
-            }
-        };
-
-        window.openEditModal = async (id) => {
-            try {
-                let task = allTasks.find(t => String(t.id) === String(id));
-                if (!task) {
-                    const { data } = await supabase.from('tasks').select('*').eq('id', id).single();
-                    task = data;
-                }
-                if (!task) return;
-
-                document.getElementById('edit_id').value = task.id;
-                document.getElementById('edit_no_surat').value = task.no_surat || '';
-                document.getElementById('edit_nama_pt').value = task.nama_pt || '';
-                document.getElementById('edit_penerima').value = task.penerima || '';
-                document.getElementById('edit_alamat').value = task.alamat_singkat || '';
-                document.getElementById('edit_select_kurir').value = task.assigned_to || '';
-
-                document.getElementById('editModal').classList.remove('hidden');
-            } catch (err) {
-                alert('Gagal membuka form edit');
-            }
-        };
-
-        window.closeEditModal = () => {
-            document.getElementById('editModal').classList.add('hidden');
-        };
-
-        document.getElementById('btnSaveEdit').onclick = async () => {
-            const id = document.getElementById('edit_id').value;
-            const payload = {
-                no_surat: document.getElementById('edit_no_surat').value,
-                nama_pt: document.getElementById('edit_nama_pt').value,
-                penerima: document.getElementById('edit_penerima').value,
-                alamat_singkat: document.getElementById('edit_alamat').value,
-                assigned_to: document.getElementById('edit_select_kurir').value
-            };
-
-            const { error } = await supabase.from('tasks').update(payload).eq('id', id);
-            if (!error) {
-                alert('✅ Update Berhasil!');
-                closeEditModal();
-                loadTasks();
-            } else {
-                alert('❌ Gagal update: ' + error.message);
-            }
-        };
-
+        // --- Fungsi Assign ---
         document.getElementById('btnAssign').onclick = async () => {
             const payload = {
                 no_surat: document.getElementById('no_surat').value,
@@ -370,15 +257,51 @@
                 status: 'pending'
             };
             if(!payload.nama_pt || !payload.assigned_to) return alert('Nama PT dan Kurir wajib diisi!');
+            
             const { error } = await supabase.from('tasks').insert([payload]);
             if(!error) {
-                alert('Tugas Berhasil Dikirim!');
-                ['no_surat', 'nama_pt', 'penerima', 'alamat'].forEach(id => document.getElementById(id).value = '');
-                document.getElementById('select_kurir').value = '';
+                alert('Tugas berhasil dikirim!');
+                document.querySelectorAll('input').forEach(i => i.value = '');
                 loadTasks();
             }
         };
 
+        // --- Fungsi Edit ---
+        window.openEdit = (id, no, pt, penerima, ket) => {
+            document.getElementById('edit_id').value = id;
+            document.getElementById('edit_no_surat').value = no;
+            document.getElementById('edit_nama_pt').value = pt;
+            document.getElementById('edit_penerima').value = penerima;
+            document.getElementById('edit_keterangan').value = ket;
+            document.getElementById('editModal').classList.remove('hidden');
+        };
+
+        window.closeEdit = () => document.getElementById('editModal').classList.add('hidden');
+
+        window.saveEdit = async () => {
+            const id = document.getElementById('edit_id').value;
+            const updateData = {
+                no_surat: document.getElementById('edit_no_surat').value,
+                nama_pt: document.getElementById('edit_nama_pt').value,
+                penerima: document.getElementById('edit_penerima').value,
+                keterangan: document.getElementById('edit_keterangan').value
+            };
+            const { error } = await supabase.from('tasks').update(updateData).eq('id', id);
+            if(!error) {
+                closeEdit();
+                loadTasks();
+            }
+        };
+
+        // --- Fungsi Delete ---
+        window.deleteTask = async (id) => {
+            if(confirm('Hapus tugas ini secara permanen?')) {
+                await supabase.from('tasks').delete().eq('id', id);
+                loadTasks();
+            }
+        };
+
+        // --- Export PDF (Landscape) ---
         document.getElementById('btnPdf').onclick = () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'mm', 'a4');
@@ -390,55 +313,55 @@
                 return (!start || dateTugas >= start) && (!end || dateTugas <= end);
             });
 
-            doc.setFontSize(18); 
-            doc.text("LAPORAN Tugas Kurir - PT KLASE AUTO RENTAL", 14, 20);
+            doc.setFontSize(14);
+            doc.text("LAPORAN PENGIRIMAN PT KLASE AUTO GRAHA", 14, 15);
+            doc.setFontSize(10);
+            doc.text(`Periode: ${start || '-'} s/d ${end || '-'}`, 14, 22);
 
             const rows = filtered.map(t => [
-                t.no_surat || '-', 
-                t.created_at ? new Date(t.created_at).toLocaleDateString('id-ID') : '-', 
-                t.tanggal_pengiriman || '-', 
-                t.nama_pt || '-', 
+                t.no_surat || '-',
+                t.created_at ? new Date(t.created_at).toLocaleDateString('id-ID') : '-',
+                t.nama_pt || '-',
                 t.penerima || '-',
-                profileMap[t.assigned_to] || '-', 
-                t.status.toUpperCase()
+                profileMap[t.assigned_to] || '-',
+                t.status.toUpperCase(),
+                t.keterangan || '-'
             ]);
 
-            doc.autoTable({ 
-                startY: 30, 
-                head: [['No Surat', 'Tgl Terima', 'Tgl Kirim', 'Tujuan', 'Penerima', 'Kurir', 'Status']], 
+            doc.autoTable({
+                startY: 28,
+                head: [['No Surat', 'Posting', 'Tujuan', 'Penerima', 'Kurir', 'Status', 'Keterangan']],
                 body: rows,
-                theme: 'grid',
-                headStyles: { fillColor: [37, 99, 235] }
+                headStyles: { fillColor: [37, 99, 235] },
+                styles: { fontSize: 8 },
+                columnStyles: { 6: { cellWidth: 50 } } // Kolom keterangan dibuat lebar
             });
-
-            doc.save(`Laporan_Admin_KAG.pdf`);
+            doc.save(`Laporan_KAG_${new Date().getTime()}.pdf`);
         };
 
+        // --- Export Excel (CSV) ---
         document.getElementById('btnExcel').onclick = () => {
-            let csv = ["\uFEFFNo Surat,Waktu Terima,Waktu Kirim,Tujuan,Penerima,Kurir,Status"];
+            let csv = ["\uFEFFNo Surat,Tgl Posting,Tujuan,Penerima,Kurir,Status,Keterangan"];
             allTasks.forEach(t => {
                 csv.push([
-                    t.no_surat || '-',
-                    t.created_at || '-',
-                    t.tanggal_pengiriman || '-',
-                    t.nama_pt || '-',
-                    t.penerima || '-',
-                    profileMap[t.assigned_to] || '-',
-                    t.status
+                    `"${t.no_surat || '-'}"`,
+                    `"${t.created_at || '-'}"`,
+                    `"${t.nama_pt || '-'}"`,
+                    `"${t.penerima || '-'}"`,
+                    `"${profileMap[t.assigned_to] || '-'}"`,
+                    `"${t.status}"`,
+                    `"${(t.keterangan || '-').replace(/"/g, '""')}"`
                 ].join(','));
             });
             const blob = new Blob([csv.join("\n")], { type: "text/csv;charset=utf-8" });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = `Laporan_Kurir.csv`;
+            link.download = `Laporan_KAG.csv`;
             link.click();
         };
 
-        document.getElementById('filterStart').onchange = applyFilters;
-        document.getElementById('filterEnd').onchange = applyFilters;
-        document.getElementById('searchInput').oninput = applyFilters;
-        document.getElementById('btnLogout').onclick = () => { localStorage.clear(); window.location.href='index.html'; };
-
+        document.getElementById('btnLogout').onclick = () => { localStorage.clear(); window.location.href = 'index.html'; };
+        
         init();
     })();
     </script>
