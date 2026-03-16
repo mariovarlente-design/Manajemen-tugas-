@@ -16,49 +16,8 @@
         .gradient-blue { background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); }
         .tab-active { background: white !important; color: #1e40af !important; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .clock-container { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-left: 4px solid #3b82f6; }
-        /* ===== WHATSAPP FLOATING BUTTON ===== */
-        #waFloatingWrapper {
-            animation: floatWA 3s ease-in-out infinite;
-            z-index: 9999 !important;
-        }
-        @keyframes floatWA {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-8px); }
-        }
-        #waMainBtn {
-            box-shadow: 0 10px 25px -5px rgba(34, 197, 94, 0.5);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        #waMainBtn:hover {
-            box-shadow: 0 20px 35px -5px rgba(34, 197, 94, 0.7);
-            transform: scale(1.05) translateY(-2px);
-        }
-        #waDropdown {
-            transform-origin: bottom right;
-            animation: slideUp 0.2s ease-out;
-        }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(10px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .wa-option {
-            transition: all 0.2s ease;
-        }
-        .wa-option:hover {
-            transform: translateX(-4px);
-            background: linear-gradient(90deg, #f0fdf4 0%, transparent 100%);
-        }
-        @media (max-width: 640px) {
-            #waFloatingWrapper {
-                bottom: 20px;
-                right: 16px;
-            }
-            #waDropdown {
-                min-width: 240px;
-                right: -10px;
-            }
-        }
-        /* ===== END WHATSAPP CSS ===== */
+        #waFloatingWrapper { animation: floatWA 3s ease-in-out infinite; z-index: 9999 !important; }
+        @keyframes floatWA { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
     </style>
 </head>
 <body class="flex flex-col">
@@ -66,11 +25,11 @@
     <nav class="glass-header sticky top-0 z-50">
         <div class="max-w-xl mx-auto px-5 flex justify-between h-20 items-center">
             <div class="flex items-center gap-3">
-                <div class="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-200">
+                <div class="bg-blue-600 p-2 rounded-xl shadow-lg">
                     <img src="https://oyakbndsejhpqsvycdud.supabase.co/storage/v1/object/public/logo/fsimage%20(1).png" class="h-7 invert" alt="Logo">
                 </div>
                 <div>
-                    <span class="text-slate-900 font-extrabold text-sm block leading-none">KAR MOBILE</span>
+                    <span class="text-slate-900 font-extrabold text-sm block leading-none uppercase">KAR MOBILE</span>
                     <span class="text-[8px] text-emerald-600 font-bold uppercase tracking-widest">Courier Management</span>
                 </div>
             </div>
@@ -86,19 +45,21 @@
                 <div class="bg-amber-500 text-white w-10 h-10 rounded-2xl flex items-center justify-center">
                     <i class="fas fa-cloud-upload-alt animate-bounce"></i>
                 </div>
-                <div><p class="text-[10px] font-black uppercase mb-1">Sinkronisasi</p>
-                <p class="text-xs font-bold"><span id="pendingCount">0</span> Tugas pending...</p></div>
+                <div>
+                    <p class="text-[10px] font-black uppercase mb-1">Sinkronisasi</p>
+                    <p class="text-xs font-bold"><span id="pendingCount">0</span> Tugas pending...</p>
+                </div>
             </div>
         </div>
 
         <div class="mb-8 space-y-4">
             <div>
                 <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Selamat Bertugas,</p>
-                <h1 id="userNameDisplay" class="text-2xl font-black text-slate-800 italic">Memuat Nama...</h1>
+                <h1 id="userNameDisplay" class="text-2xl font-black text-slate-800 italic">Memuat...</h1>
             </div>
             <div class="clock-container rounded-2xl p-4 shadow-lg text-white flex justify-between items-center">
                 <div>
-                    <p id="realtimeDate" class="text-[10px] font-bold text-blue-400 uppercase tracking-tighter mb-0.5">---</p>
+                    <p id="realtimeDate" class="text-[10px] font-bold text-blue-400 uppercase mb-0.5">---</p>
                     <p id="realtimeClock" class="text-3xl font-black tracking-tighter">00:00:00</p>
                 </div>
                 <span class="text-[10px] bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full border border-blue-500/30 font-bold uppercase">WIB</span>
@@ -110,59 +71,8 @@
             <button id="tabSelesai" class="flex-1 py-3.5 text-xs font-black uppercase rounded-xl transition text-slate-400" onclick="switchTab('selesai')">Selesai</button>
         </div>
 
-        <div id="taskList" class="space-y-6">
-            <div class="text-center py-20 text-slate-400"><i class="fas fa-spinner fa-spin text-blue-600 text-2xl"></i></div>
-        </div>
+        <div id="taskList" class="space-y-6"></div>
     </main>
-
-    <!-- ===== FLOATING WHATSAPP BUTTON (DIPINDAH KE ATAS SCRIPT) ===== -->
-    <div id="waFloatingWrapper" class="fixed bottom-6 right-6 z-[9999]">
-        <!-- Main Button -->
-        <button id="waMainBtn" 
-                class="bg-green-500 hover:bg-green-600 text-white rounded-full p-4 shadow-2xl transition-all duration-300 flex items-center justify-center relative"
-                aria-label="Hubungi Admin via WhatsApp"
-                type="button">
-            <i class="fab fa-whatsapp text-3xl"></i>
-            <!-- Badge Notifikasi -->
-            <span class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center animate-pulse border-2 border-white">!</span>
-        </button>
-
-        <!-- Dropdown Options -->
-        <div id="waDropdown" class="hidden absolute bottom-20 right-0 bg-white rounded-2xl shadow-2xl p-3 min-w-[260px] border border-slate-100">
-            <div class="text-[10px] font-black text-slate-400 uppercase mb-2 px-2 tracking-wider">Hubungi Admin:</div>
-
-            <a href="#" data-number="6285793117746" data-name="Admin"
-               class="wa-option flex items-center gap-3 px-3 py-2.5 hover:bg-green-50 rounded-xl transition-all group cursor-pointer">
-                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                   <i class="fas fa-user-gear text-green-600"></i>
-                </div>
-                <div class="min-w-0">
-                    <div class="text-sm font-bold text-slate-800 truncate">Admin Shifa</div>
-                    <div class="text-[10px] text-slate-400">Urusan Pengiriman & Tugas</div>
-                </div>
-                <i class="fas fa-chevron-right text-slate-300 ml-auto text-xs"></i>
-            </a>
-
-            <a href="#" data-number="6285693456415" data-name="Customer Service"
-               class="wa-option flex items-center gap-3 px-3 py-2.5 hover:bg-blue-50 rounded-xl transition-all group cursor-pointer">
-                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i class="fas fa-headset text-blue-600"></i>
-                </div>
-                <div class="min-w-0">
-                    <div class="text-sm font-bold text-slate-800 truncate">Customer Service</div>
-                    <div class="text-[10px] text-slate-400">Bantuan Umum & Komplain</div>
-                </div>
-                <i class="fas fa-chevron-right text-slate-300 ml-auto text-xs"></i>
-            </a>
-
-            <div class="border-t border-slate-100 mt-2 pt-2.5 px-2">
-                <div class="text-[9px] text-slate-400 text-center font-bold">
-                    <i class="fas fa-clock mr-1"></i> 08:00 - 17:00 WIB
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- ===== END WHATSAPP BUTTON ===== -->
 
     <script>
     (function() {
@@ -173,7 +83,7 @@
         const myId = localStorage.getItem('userId');
 
         const db = new Dexie("OfflineDatabase");
-        db.version(1).stores({ pendingUploads: '++id, taskId, file, coords, waktuSelesai' });
+        db.version(1).stores({ pendingUploads: '++id, taskId, file, coords, waktuSelesai, keterangan' });
 
         let allTasks = [];
         let activeFilter = 'pending';
@@ -185,9 +95,6 @@
             await fetchTasks();
             updateSyncBadge();
             window.addEventListener('online', syncOfflineData);
-
-            // Initialize WhatsApp button after DOM is ready
-            initWhatsAppButton();
         }
 
         function updateClock() {
@@ -202,8 +109,8 @@
         }
 
         async function fetchTasks() {
-            const { data, error } = await supabase.from('tasks').select('*').eq('assigned_to', myId).order('created_at', { ascending: false });
-            if (!error) { allTasks = data; renderTasks(); }
+            const { data } = await supabase.from('tasks').select('*').eq('assigned_to', myId).order('created_at', { ascending: false });
+            if (data) { allTasks = data; renderTasks(); }
         }
 
         window.switchTab = function(status) {
@@ -217,11 +124,11 @@
             const file = input.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = (e) => {
                     document.getElementById(`img-preview-${id}`).src = e.target.result;
                     document.getElementById(`preview-container-${id}`).classList.remove('hidden');
                     document.getElementById(`placeholder-${id}`).classList.add('hidden');
-                }
+                };
                 reader.readAsDataURL(file);
             }
         };
@@ -229,56 +136,34 @@
         function renderTasks() {
             const container = document.getElementById('taskList');
             const filtered = allTasks.filter(t => t.status === activeFilter);
-            if (filtered.length === 0) {
-                container.innerHTML = '<div class="bg-white rounded-[2rem] p-12 text-center text-slate-300 font-bold italic">Belum ada data</div>';
-                return;
-            }
-            container.innerHTML = '';
+            container.innerHTML = filtered.length === 0 ? '<div class="text-center py-20 text-slate-300 italic font-bold">Belum ada data</div>' : '';
+            
             filtered.forEach(t => {
                 const isPending = t.status === 'pending';
-
-                const queryMaps = encodeURIComponent(`${t.alamat_singkat || ''} ${t.nama_pt || ''}`);
-                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${queryMaps}`;
-
                 container.innerHTML += `
-                    <div class="bg-white rounded-[2rem] shadow-xl border border-slate-50 overflow-hidden mb-4">
+                    <div class="bg-white rounded-[2rem] shadow-xl border border-slate-50 overflow-hidden mb-6">
                         <div class="p-7">
-                            <span class="text-[10px] font-black text-blue-600 uppercase mb-2 block">${t.no_surat || 'LOGISTICS REF'}</span>
+                            <span class="text-[10px] font-black text-blue-600 uppercase mb-2 block">${t.no_surat || 'TUGAS'}</span>
                             <h3 class="font-black text-xl text-slate-800 mb-4">${t.nama_pt}</h3>
-                            <div class="space-y-3 mb-6 text-sm text-slate-600 font-bold">
-                                <div class="flex gap-3 items-start">
-                                    <i class="fas fa-map-pin text-rose-500 mt-1"></i>
-                                    <div>
-                                        <p>${t.alamat_singkat || '-'}</p>
-                                        <a href="${mapsUrl}" target="_blank" class="text-blue-600 text-[10px] font-black uppercase mt-1 flex items-center gap-1 hover:underline">
-                                            <i class="fas fa-directions"></i> BUKA RUTE
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="flex gap-3"><i class="fas fa-user-circle text-blue-500 mt-1"></i><p>Penerima: ${t.penerima || '-'}</p></div>
-                            </div>
+                            <p class="text-sm text-slate-600 font-bold mb-6 italic"><i class="fas fa-map-pin text-rose-500 mr-2"></i>${t.alamat_singkat || '-'}</p>
+                            
                             ${isPending ? `
-                                <div class="pt-6 border-t border-slate-50 space-y-4">
-                                    <label class="flex flex-col items-center justify-center w-full min-h-[160px] border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 cursor-pointer overflow-hidden relative hover:border-blue-400 transition">
-                                        <div id="preview-container-${t.id}" class="absolute inset-0 hidden">
-                                            <img id="img-preview-${t.id}" class="w-full h-full object-cover">
-                                        </div>
-                                        <div id="placeholder-${t.id}" class="flex flex-col items-center">
-                                            <i class="fas fa-camera text-2xl text-slate-300 mb-2"></i>
-                                            <p class="text-[10px] font-black text-slate-400 uppercase">Ambil Foto Bukti</p>
-                                        </div>
+                                <div class="space-y-4">
+                                    <input type="datetime-local" id="datetime-${t.id}" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3 text-sm font-bold">
+                                    <textarea id="keterangan-${t.id}" placeholder="Catatan (Penerima/Kondisi)" class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3 text-sm font-bold h-20 resize-none"></textarea>
+                                    
+                                    <label class="flex flex-col items-center justify-center w-full min-h-[160px] border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 cursor-pointer relative overflow-hidden">
+                                        <div id="preview-container-${t.id}" class="absolute inset-0 hidden"><img id="img-preview-${t.id}" class="w-full h-full object-cover"></div>
+                                        <div id="placeholder-${t.id}" class="text-center"><i class="fas fa-camera text-2xl text-slate-300 mb-2"></i><p class="text-[10px] font-black text-slate-400 uppercase">Ambil Foto</p></div>
                                         <input type="file" id="file-${t.id}" accept="image/*" capture="environment" class="hidden" onchange="previewImage(this, '${t.id}')">
                                     </label>
-                                    <button onclick="completeTask('${t.id}')" id="btn-${t.id}" class="w-full gradient-blue text-white font-black py-5 rounded-2xl shadow-lg hover:brightness-110 active:scale-[0.98] transition">KONFIRMASI SELESAI</button>
+                                    
+                                    <button onclick="completeTask('${t.id}')" id="btn-${t.id}" class="w-full gradient-blue text-white font-black py-5 rounded-2xl shadow-lg">KONFIRMASI SELESAI</button>
                                 </div>
                             ` : `
                                 <div class="pt-4 border-t border-slate-50 flex justify-between items-center">
-                                    <span class="text-emerald-500 font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
-                                        <i class="fas fa-check-double"></i> Terkirim
-                                    </span>
-                                    <a href="${t.bukti_url || '#'}" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded-xl font-black text-[10px] uppercase flex items-center gap-1 shadow-md shadow-blue-100 hover:bg-blue-700 transition">
-                                        <i class="fas fa-image"></i> Lihat Bukti Foto
-                                    </a>
+                                    <span class="text-emerald-500 font-black text-[10px] uppercase tracking-widest"><i class="fas fa-check-double mr-2"></i>Selesai</span>
+                                    <a href="${t.bukti_url}" target="_blank" class="text-blue-600 font-black text-[10px] uppercase underline">Lihat Bukti</a>
                                 </div>
                             `}
                         </div>
@@ -286,57 +171,68 @@
             });
         }
 
-        window.completeTask = async function(id) {
-            const fileInput = document.getElementById(`file-${id}`);
-            if (!fileInput.files[0]) return alert('Ambil foto bukti dulu!');
+                window.completeTask = async function(id) {
+            // 1. Ambil elemen berdasarkan ID unik masing-masing tugas
+            const datetimeInput = document.getElementById(`datetime-${id}`);
+            const keteranganInput = document.getElementById(`keterangan-${id}`);
+            const fileInput = document.getElementById(`file-${id}`); // <-- Ini kunci perbaikannya
+
+            // 2. Validasi awal
+            if (!datetimeInput || !datetimeInput.value) return alert('⚠️ Harap isi Tanggal & Waktu!');
+            if (!fileInput || !fileInput.files[0]) return alert('⚠️ Harap ambil foto bukti!');
+
             const btn = document.getElementById(`btn-${id}`);
             btn.disabled = true; 
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengirim...';
 
             try {
+                // 3. Proses Gambar & Tanggal
                 const compressedFile = await compressImage(fileInput.files[0]);
-                const sekarangISO = new Date().toISOString(); 
+                const isoDate = new Date(datetimeInput.value).toISOString();
+                const catatanKurir = keteranganInput ? keteranganInput.value : '';
 
-                let coords = "No GPS";
-                try {
-                    const pos = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, {timeout: 4000});
-                    });
-                    if(pos) coords = `${pos.coords.latitude},${pos.coords.longitude}`;
-                } catch(e) {}
-
+                // 4. Logika Offline (Tetap dipertahankan)
                 if (!navigator.onLine) {
-                    await db.pendingUploads.add({ taskId: id, file: compressedFile, coords: coords, waktuSelesai: sekarangISO });
+                    await db.pendingUploads.add({ 
+                        taskId: id, 
+                        file: compressedFile, 
+                        waktuSelesai: isoDate, 
+                        keterangan: catatanKurir 
+                    });
                     updateLocalStatus(id);
-                    alert('Offline: Disimpan di perangkat.');
+                    alert('✅ Tersimpan Offline (Akan sinkron otomatis saat online)');
                     return;
                 }
 
+                // 5. Logika Online Supabase (Tetap dipertahankan)
                 const fileName = `KAG_${id}_${Date.now()}.jpg`;
-                const { error: upErr } = await supabase.storage.from('bukti').upload(fileName, compressedFile);
-                if (upErr) throw new Error("Gagal Storage: " + upErr.message);
+                const { error: uploadErr } = await supabase.storage.from('bukti').upload(fileName, compressedFile);
+                if (uploadErr) throw uploadErr;
 
-                const { data: urlData } = supabase.storage.from('bukti').getPublicUrl(fileName);
+                const { data: url } = supabase.storage.from('bukti').getPublicUrl(fileName);
 
                 const { error: dbErr } = await supabase.from('tasks').update({ 
                     status: 'selesai', 
-                    bukti_url: urlData.publicUrl, 
-                    location_coords: coords, 
-                    tanggal_pengiriman: sekarangISO
+                    bukti_url: url.publicUrl, 
+                    tanggal_pengiriman: isoDate, 
+                    keterangan: catatanKurir 
                 }).eq('id', id);
 
-                if (dbErr) throw new Error("Gagal Database: " + dbErr.message);
+                if (dbErr) throw dbErr;
 
+                // 6. Update Tampilan
                 updateLocalStatus(id);
-                alert('Tugas Selesai!');
+                alert('✅ Tugas Berhasil Diselesaikan!');
 
             } catch (e) {
-                alert('ERROR: ' + e.message);
-                console.error(e);
+                console.error("Detail Error:", e);
+                alert('❌ Gagal: ' + (e.message || "Terjadi kesalahan koneksi"));
             } finally {
-                btn.disabled = false; btn.innerHTML = 'KONFIRMASI SELESAI';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>KONFIRMASI SELESAI';
             }
         };
+
 
         function updateLocalStatus(id) {
             const idx = allTasks.findIndex(t => t.id == id);
@@ -349,27 +245,19 @@
             if (!navigator.onLine) return;
             const pending = await db.pendingUploads.toArray();
             for (const item of pending) {
-                try {
-                    const fileName = `KAG_${item.taskId}_${Date.now()}.jpg`;
-                    await supabase.storage.from('bukti').upload(fileName, item.file);
-                    const { data: url } = supabase.storage.from('bukti').getPublicUrl(fileName);
-                    await supabase.from('tasks').update({ 
-                        status: 'selesai', 
-                        bukti_url: url.publicUrl, 
-                        location_coords: item.coords, 
-                        tanggal_pengiriman: item.waktuSelesai 
-                    }).eq('id', item.taskId);
-                    await db.pendingUploads.delete(item.id);
-                } catch (e) { console.error(e); }
+                const fileName = `KAG_${item.taskId}_${Date.now()}.jpg`;
+                await supabase.storage.from('bukti').upload(fileName, item.file);
+                const { data: url } = supabase.storage.from('bukti').getPublicUrl(fileName);
+                await supabase.from('tasks').update({ status: 'selesai', bukti_url: url.publicUrl, tanggal_pengiriman: item.waktuSelesai, keterangan: item.keterangan }).eq('id', item.taskId);
+                await db.pendingUploads.delete(item.id);
             }
-            updateSyncBadge(); fetchTasks();
+            fetchTasks();
         }
 
         async function updateSyncBadge() {
             const count = await db.pendingUploads.count();
-            const badge = document.getElementById('syncBadge');
-            if (badge) badge.classList.toggle('hidden', count === 0);
-            if (document.getElementById('pendingCount')) document.getElementById('pendingCount').innerText = count;
+            document.getElementById('syncBadge').classList.toggle('hidden', count === 0);
+            document.getElementById('pendingCount').innerText = count;
         }
 
         async function compressImage(file) {
@@ -382,8 +270,7 @@
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
                         let w = img.width, h = img.height;
-                        const max = 800;
-                        if (w > max) { h *= max/w; w = max; }
+                        if (w > 800) { h *= 800/w; w = 800; }
                         canvas.width = w; canvas.height = h;
                         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
                         canvas.toBlob(b => resolve(new File([b], file.name, {type:'image/jpeg'})), 'image/jpeg', 0.7);
@@ -392,73 +279,8 @@
             });
         }
 
-        // ===== WHATSAPP FLOATING BUTTON LOGIC =====
-        function initWhatsAppButton() {
-            const waMainBtn = document.getElementById('waMainBtn');
-            const waDropdown = document.getElementById('waDropdown');
-
-            if (!waMainBtn || !waDropdown) {
-                console.log('⚠️ WhatsApp elements not found');
-                return;
-            }
-
-            console.log('✅ WhatsApp button initialized');
-
-            // Toggle dropdown
-            waMainBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                waDropdown.classList.toggle('hidden');
-                this.classList.toggle('rotate-12');
-            });
-
-            // Close when click outside
-            document.addEventListener('click', function() {
-                waDropdown.classList.add('hidden');
-                waMainBtn.classList.remove('rotate-12');
-            });
-
-            // Prevent dropdown close when clicking inside it
-            waDropdown.addEventListener('click', function(e) {
-                e.stopPropagation();
-            });
-
-            // Handle admin selection
-            document.querySelectorAll('.wa-option').forEach(option => {
-                option.addEventListener('click', function(e) {
-                    e.preventDefault();
-
-                    const adminNumber = this.dataset.number;
-                    const adminName = this.dataset.name;
-                    const userName = localStorage.getItem('full_name') || 'Kurir';
-                    const userId = localStorage.getItem('userId') || '-';
-
-                    // Template pesan
-                    const message = 
-`Halo ${adminName} PT Klase Auto Graha 👋
-
-Saya: ${userName} (ID: ${userId})
-Tanggal: ${new Date().toLocaleDateString('id-ID')}
-
-Mohon bantuannya untuk:
-[Tulis pesan Anda di sini]
-
-Terima kasih.`;
-
-                    // Encode & open WhatsApp
-                    const waURL = `https://wa.me/${adminNumber}?text=${encodeURIComponent(message)}`;
-                    window.open(waURL, '_blank');
-
-                    // Close dropdown
-                    waDropdown.classList.add('hidden');
-
-                    console.log(`📱 WA clicked: ${adminName}`);
-                });
-            });
-        }
-        // ===== END WHATSAPP LOGIC =====
-
         document.getElementById('btnLogout').onclick = () => { localStorage.clear(); window.location.replace('index.html'); };
-        document.addEventListener('DOMContentLoaded', init);
+        init();
     })();
     </script>
 </body>
