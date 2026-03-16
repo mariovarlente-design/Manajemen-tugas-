@@ -1,74 +1,27 @@
-/* PT Klase Auto Graha - Service Worker 
-   File: sw.js
-*/
-
-// Import SDK OneSignal untuk menangani Push Notifications di background
-importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
-
-const CACHE_NAME = 'klase-kurir-v2';
-const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './admin.html',
-  './user_dashboard.html',
-  './manifest.json'
+const CACHE_NAME = 'kar-mobile-v1';
+const assetsToCache = [
+  '/',
+  'index.html',
+  'https://unpkg.com/dexie/dist/dexie.js',
+  'https://cdn.tailwindcss.com',
+  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
 
-// 1. Install Event: Menyimpan aset statis ke Cache
+// Tahap Install: Menyimpan file ke Cache
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('✅ Caching assets...');
-      return cache.addAll(ASSETS_TO_CACHE);
+      return cache.addAll(assetsToCache);
     })
   );
-  self.skipWaiting();
 });
 
-// 2. Activate Event: Membersihkan cache versi lama
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-      );
-    })
-  );
-  self.clients.claim();
-});
-
-// 3. Fetch Event: Strategi "Stale-While-Revalidate"
+// Tahap Fetch: Mengambil file dari Cache jika offline
 self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-
-  // Jangan simpan request ke Supabase (API) di dalam cache statis
-  if (url.hostname.includes('supabase.co')) return;
-
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // Berikan versi cache, tapi update di background (jika ada internet)
-        fetch(event.request).then((networkResponse) => {
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
-        }).catch(() => {}); 
-        
-        return cachedResponse;
-      }
-
-      // Jika tidak ada di cache, ambil dari network
-      return fetch(event.request).then((networkResponse) => {
-        // Secara dinamis simpan file baru (seperti gambar logo atau font) ke cache
-        if (networkResponse.status === 200) {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
-        }
-        return networkResponse;
-      }).catch(() => {
-        // Jika offline total dan navigasi ke halaman yang tidak ada di cache, arahkan ke login
-        if (event.request.mode === 'navigate') {
-          return caches.match('./index.html');
-        }
-      });
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
     })
   );
 });
