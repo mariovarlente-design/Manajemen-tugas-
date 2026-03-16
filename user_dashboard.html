@@ -303,79 +303,79 @@
             });
         }
 
-        window.completeTask = async function(id) {
-    const datetimeInput = document.getElementById(`datetime-${id}`);
-    const keteranganInput = document.getElementById(`keterangan-${id}`);
-    // BARIS DI BAWAH INI YANG HARUS DITAMBAHKAN:
-    const fileInput = document.getElementById(`file-${id}`); 
-    
-    const manualDate = datetimeInput ? datetimeInput.value : null;
-    const keterangan = keteranganInput ? keteranganInput.value : '';
-    
-    // Validasi input
-    if (!manualDate) {
-        return alert('⚠️ Masukkan tanggal dan waktu penyelesaian terlebih dahulu!');
-    }
-    
-    // Validasi apakah file sudah dipilih
-    if (!fileInput || !fileInput.files[0]) {
-        return alert('⚠️ Silakan ambil foto bukti terlebih dahulu!');
-    }
+                window.completeTask = async function(id) {
+            // 1. Deklarasikan semua input dari HTML
+            const datetimeInput = document.getElementById(`datetime-${id}`);
+            const keteranganInput = document.getElementById(`keterangan-${id}`);
+            const fileInput = document.getElementById(`file-${id}`); 
 
-    // ... sisa kode di bawahnya tetap sama ...
+            const manualDate = datetimeInput ? datetimeInput.value : null;
+            const keterangan = keteranganInput ? keteranganInput.value : '';
 
-    const btn = document.getElementById(`btn-${id}`);
-    btn.disabled = true; 
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengirim...';
+            // 2. Validasi input
+            if (!manualDate) {
+                return alert('⚠️ Masukkan tanggal dan waktu penyelesaian terlebih dahulu!');
+            }
 
-    try {
-        const compressedFile = await compressImage(fileInput.files[0]);
-        const selesaiISO = new Date(manualDate).toISOString();
+            if (!fileInput || !fileInput.files[0]) {
+                return alert('⚠️ Silakan ambil foto bukti terlebih dahulu!');
+            }
 
-        // Ambil GPS (tetap sama)
-        let coords = "No GPS";
-        // ... kode geolocation ...
+            const btn = document.getElementById(`btn-${id}`);
+            btn.disabled = true; 
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengirim...';
 
-        // HANDLE OFFLINE
-        if (!navigator.onLine) {
-            await db.pendingUploads.add({ 
-                taskId: id, 
-                file: compressedFile, 
-                coords: coords, 
-                waktuSelesai: selesaiISO,
-                keterangan: keterangan // Tambah ke database offline
-            });
-            updateLocalStatus(id);
-            alert('✅ Offline: Data disimpan!');
-            return;
-        }
+            try {
+                const compressedFile = await compressImage(fileInput.files[0]);
+                const selesaiISO = new Date(manualDate).toISOString();
 
-        // UPLOAD ONLINE
-        const fileName = `KAG_${id}_${Date.now()}.jpg`;
-        await supabase.storage.from('bukti').upload(fileName, compressedFile);
-        const { data: urlData } = supabase.storage.from('bukti').getPublicUrl(fileName);
+                // GPS (Default jika gagal/tidak diizinkan)
+                let coords = "No GPS";
 
-        // UPDATE DATABASE SUPABASE
-        const { error: dbErr } = await supabase.from('tasks').update({ 
-            status: 'selesai', 
-            bukti_url: urlData.publicUrl, 
-            location_coords: coords, 
-            tanggal_pengiriman: selesaiISO,
-            keterangan: keterangan // KIRIM KETERANGAN KE DATABASE
-        }).eq('id', id);
+                // HANDLE OFFLINE
+                if (!navigator.onLine) {
+                    await db.pendingUploads.add({ 
+                        taskId: id, 
+                        file: compressedFile, 
+                        coords: coords, 
+                        waktuSelesai: selesaiISO,
+                        keterangan: keterangan 
+                    });
+                    updateLocalStatus(id);
+                    alert('✅ Mode Offline: Data disimpan di HP. Akan otomatis terkirim saat sinyal kembali.');
+                    return;
+                }
 
-        if (dbErr) throw new Error("Gagal Update Database");
+                // UPLOAD ONLINE
+                const fileName = `KAG_${id}_${Date.now()}.jpg`;
+                const { error: uploadErr } = await supabase.storage.from('bukti').upload(fileName, compressedFile);
+                if(uploadErr) throw uploadErr;
 
-        updateLocalStatus(id);
-        alert('✅ Tugas Berhasil!');
+                const { data: urlData } = supabase.storage.from('bukti').getPublicUrl(fileName);
 
-    } catch (e) {
-        alert('❌ ERROR: ' + e.message);
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>KONFIRMASI SELESAI';
-    }
-};
+                // UPDATE DATABASE
+                const { error: dbErr } = await supabase.from('tasks').update({ 
+                    status: 'selesai', 
+                    bukti_url: urlData.publicUrl, 
+                    location_coords: coords, 
+                    tanggal_pengiriman: selesaiISO,
+                    keterangan: keterangan 
+                }).eq('id', id);
+
+                if (dbErr) throw dbErr;
+
+                updateLocalStatus(id);
+                alert('✅ Tugas Berhasil Diselesaikan!');
+
+            } catch (e) {
+                console.error(e);
+                alert('❌ ERROR: ' + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>KONFIRMASI SELESAI';
+            }
+        };
+
 
 
         function updateLocalStatus(id) {
