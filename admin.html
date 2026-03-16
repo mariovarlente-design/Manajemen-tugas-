@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
@@ -18,7 +18,7 @@
         .gradient-blue { background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); }
         .gradient-rose { background: linear-gradient(135deg, #f43f5e 0%, #9f1239 100%); }
         .gradient-emerald { background: linear-gradient(135deg, #10b981 0%, #065f46 100%); }
-        
+
         /* Animasi Smooth untuk Tabel */
         #taskBody tr {
             animation: fadeIn 0.4s ease backwards;
@@ -27,7 +27,7 @@
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
+
         button:disabled { opacity: 0.6; cursor: not-allowed; }
     </style>
 </head>
@@ -277,19 +277,149 @@
         };
         window.deleteTask = async (id) => { if(confirm('Hapus?')) { await supabase.from('tasks').delete().eq('id', id); loadTasks(); } };
 
-        document.getElementById('btnPdf').onclick = () => {
-            const { jsPDF } = window.jspdf; const doc = new jsPDF('l', 'mm', 'a4');
-            const rows = allTasks.map(t => [t.no_surat, t.created_at?.split('T')[0], t.tanggal_pengiriman, t.nama_pt, t.penerima, profileMap[t.assigned_to], t.status, t.keterangan]);
-            doc.autoTable({ head: [['No Surat', 'Tgl Post', 'Tgl Kirim', 'Tujuan', 'Penerima', 'Kurir', 'Status', 'Keterangan']], body: rows });
-            doc.save('Laporan_KAG.pdf');
+                // 1. Fungsi helper untuk urutan Terlama -> Terbaru
+        function getSortedTasks() {
+            return [...allTasks].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        }
+
+        // 2. Fungsi Validasi Filter (Harus pilih tanggal dulu)
+        function isFilterSelected() {
+            const start = document.getElementById('filterStart').value;
+            const end = document.getElementById('filterEnd').value;
+            if (!start || !end) {
+                alert("Pilih rentang tanggal (Mulai & Selesai) dulu ya!");
+                return false;
+            }
+            return { start, end };
+        }
+
+        // 3. Logika Export PDF dengan Kolom Tanda Tangan
+        document.getElementById('btnPdf').onclick = async () => {
+            const filter = isFilterSelected();
+            if (!filter) return;
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4'); 
+            
+            const filteredData = allTasks.filter(t => {
+                const dateTugas = t.created_at ? t.created_at.split('T')[0] : "";
+                return (dateTugas >= filter.start && dateTugas <= filter.end);
+            }).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+            if (filteredData.length === 0) {
+                alert("Data kosong di tanggal tersebut.");
+                return;
+            }
+
+            // --- KOP SURAT ---
+            const logoUrl = "https://oyakbndsejhpqsvycdud.supabase.co/storage/v1/object/public/logo/fsimage%20(1).png";
+            try {
+                const img = new Image();
+                img.src = logoUrl;
+                img.crossOrigin = "Anonymous";
+                await new Promise((resolve) => {
+                    img.onload = () => { doc.addImage(img, 'PNG', 14, 8, 20, 15); resolve(); };
+                    img.onerror = () => resolve();
+                });
+            } catch (e) {}
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(18);
+            doc.text("PT KLASE AUTO GRAHA", 38, 14);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Laporan Periode: ${filter.start} s/d ${filter.end}`, 38, 19);
+            doc.text(`Dicetak: ${new Date().toLocaleString('id-ID')}`, 38, 23);
+            doc.setDrawColor(37, 99, 235);
+            doc.line(14, 28, 283, 28);
+
+            // --- TABEL DATA ---
+            const rows = filteredData.map(t => [
+                t.no_surat || '-',
+                t.created_at ? t.created_at.split('T')[0] : '-',
+                t.tanggal_pengiriman || '-',
+                t.nama_pt || '-',
+                t.penerima || '-',
+                profileMap[t.assigned_to] || 'User',
+                t.status?.toUpperCase(),
+                t.keterangan || '-'
+            ]);
+
+            doc.autoTable({
+                head: [['No Surat', 'Tgl Post', 'Tgl Kirim', 'Nama PT', 'Penerima', 'Kurir', 'Status', 'Keterangan']],
+                body: rows,
+                startY: 35,
+                theme: 'grid',
+                headStyles: { fillColor: [37, 99, 235] },
+                styles: { fontSize: 8 },
+                didDrawPage: (data) => {
+                    const pageSize = doc.internal.pageSize;
+                    const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+                    doc.setFontSize(8);
+                    doc.text(`Halaman ${data.pageNumber}`, data.settings.margin.left, pageHeight - 10);
+                }
+            });
+
+            // --- KOLOM TANDA TANGAN ---
+            let finalY = doc.lastAutoTable.finalY + 15;
+            const pageWidth = doc.internal.pageSize.width;
+
+            if (finalY > 150) { 
+                doc.addPage();
+                finalY = 30; 
+            }
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+
+            // Tanda Tangan Kiri (Admin)
+            doc.text("Dibuat Oleh,", 40, finalY);
+            doc.text("PIC,", 40, finalY + 5);
+            doc.line(40, finalY + 25, 90, finalY + 25); 
+            doc.setFont("helvetica", "italic");
+            doc.text("               ", 40, finalY + 30);
+
+            // Tanda Tangan Kanan (Pimpinan)
+            doc.setFont("helvetica", "normal");
+            doc.text("Mengetahui,", pageWidth - 90, finalY);
+            doc.text("Atasan ,", pageWidth - 90, finalY + 5);
+            doc.line(pageWidth - 90, finalY + 25, pageWidth - 40, finalY + 25); 
+            doc.setFont("helvetica", "italic");
+            doc.text("             ", pageWidth - 90, finalY + 30);
+
+            doc.save(`KAR_LAPORAN_${filter.start}.pdf`);
         };
 
+        // 4. Logika Export Excel/CSV (Tetap dengan urutan Terlama -> Terbaru)
         document.getElementById('btnExcel').onclick = () => {
-            let csv = ["\uFEFFNo Surat,Tgl Post,Tgl Kirim,Tujuan,Penerima,Kurir,Status,Ket"];
-            allTasks.forEach(t => csv.push([`"${t.no_surat}"`,`"${t.created_at}"`,`"${t.tanggal_pengiriman}"`,`"${t.nama_pt}"`,`"${t.penerima}"`,`"${profileMap[t.assigned_to]}"`,`"${t.status}"`,`"${t.keterangan}"`].join(',')));
-            const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv.join("\n")], { type: "text/csv" }));
-            link.download = `Laporan_KAG.csv`; link.click();
+            const filter = isFilterSelected();
+            if (!filter) return;
+
+            const filteredData = allTasks.filter(t => {
+                const dateTugas = t.created_at ? t.created_at.split('T')[0] : "";
+                return (dateTugas >= filter.start && dateTugas <= filter.end);
+            }).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+            if (filteredData.length === 0) return alert("Data tidak ditemukan.");
+
+            let csv = "\uFEFFPT KLASE AUTO GRAHA\n";
+            csv += `Laporan: ${filter.start} s/d ${filter.end}\n\n`;
+            csv += "No Surat,Tgl Post,Tgl Kirim,Tujuan,Penerima,Kurir,Status,Keterangan\n";
+
+            filteredData.forEach(t => {
+                csv += [
+                    `"${t.no_surat}"`, `"${t.created_at?.split('T')[0]}"`, `"${t.tanggal_pengiriman}"`,
+                    `"${t.nama_pt}"`, `"${t.penerima}"`, `"${profileMap[t.assigned_to]}"`,
+                    `"${t.status}"`, `"${t.keterangan}"`
+                ].join(',') + "\n";
+            });
+
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+            link.download = `KAG_LAPORAN_${filter.start}.csv`;
+            link.click();
         };
+
 
         document.getElementById('btnLogout').onclick = () => { localStorage.clear(); window.location.href = 'index.html'; };
         init();
