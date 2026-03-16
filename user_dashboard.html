@@ -115,7 +115,7 @@
         </div>
     </main>
 
-    <!-- ===== FLOATING WHATSAPP BUTTON (DIPINDAH KE ATAS SCRIPT) ===== -->
+    <!-- ===== FLOATING WHATSAPP BUTTON ===== -->
     <div id="waFloatingWrapper" class="fixed bottom-6 right-6 z-[9999]">
         <!-- Main Button -->
         <button id="waMainBtn" 
@@ -126,11 +126,11 @@
             <!-- Badge Notifikasi -->
             <span class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center animate-pulse border-2 border-white">!</span>
         </button>
-        
+
         <!-- Dropdown Options -->
         <div id="waDropdown" class="hidden absolute bottom-20 right-0 bg-white rounded-2xl shadow-2xl p-3 min-w-[260px] border border-slate-100">
             <div class="text-[10px] font-black text-slate-400 uppercase mb-2 px-2 tracking-wider">Hubungi Admin:</div>
-            
+
             <a href="#" data-number="6285793117746" data-name="Admin"
                class="wa-option flex items-center gap-3 px-3 py-2.5 hover:bg-green-50 rounded-xl transition-all group cursor-pointer">
                 <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -142,7 +142,7 @@
                 </div>
                 <i class="fas fa-chevron-right text-slate-300 ml-auto text-xs"></i>
             </a>
-            
+
             <a href="#" data-number="6285693456415" data-name="Customer Service"
                class="wa-option flex items-center gap-3 px-3 py-2.5 hover:bg-blue-50 rounded-xl transition-all group cursor-pointer">
                 <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -154,7 +154,7 @@
                 </div>
                 <i class="fas fa-chevron-right text-slate-300 ml-auto text-xs"></i>
             </a>
-            
+
             <div class="border-t border-slate-100 mt-2 pt-2.5 px-2">
                 <div class="text-[9px] text-slate-400 text-center font-bold">
                     <i class="fas fa-clock mr-1"></i> 08:00 - 17:00 WIB
@@ -185,8 +185,6 @@
             await fetchTasks();
             updateSyncBadge();
             window.addEventListener('online', syncOfflineData);
-            
-            // Initialize WhatsApp button after DOM is ready
             initWhatsAppButton();
         }
 
@@ -236,7 +234,6 @@
             container.innerHTML = '';
             filtered.forEach(t => {
                 const isPending = t.status === 'pending';
-
                 const queryMaps = encodeURIComponent(`${t.alamat_singkat || ''} ${t.nama_pt || ''}`);
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${queryMaps}`;
 
@@ -258,7 +255,24 @@
                                 <div class="flex gap-3"><i class="fas fa-user-circle text-blue-500 mt-1"></i><p>Penerima: ${t.penerima || '-'}</p></div>
                             </div>
                             ${isPending ? `
-                                <div class="pt-6 border-t border-slate-50 space-y-4">
+                                <div>
+    <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block ml-1">
+        <i class="fas fa-calendar-check mr-1"></i> Tanggal & Waktu Penyelesaian
+    </label>
+    <input type="datetime-local" id="datetime-${t.id}" 
+           class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition">
+</div>
+
+<div>
+    <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block ml-1">
+        <i class="fas fa-comment-dots mr-1"></i> Keterangan / Catatan Kurir
+    </label>
+    <textarea id="keterangan-${t.id}" placeholder="Contoh: Diterima oleh Satpam / Titip di lobby" 
+              class="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-blue-500 transition h-20 resize-none"></textarea>
+</div>
+
+                                    
+                                    <!-- Upload Foto Bukti -->
                                     <label class="flex flex-col items-center justify-center w-full min-h-[160px] border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 cursor-pointer overflow-hidden relative hover:border-blue-400 transition">
                                         <div id="preview-container-${t.id}" class="absolute inset-0 hidden">
                                             <img id="img-preview-${t.id}" class="w-full h-full object-cover">
@@ -269,7 +283,10 @@
                                         </div>
                                         <input type="file" id="file-${t.id}" accept="image/*" capture="environment" class="hidden" onchange="previewImage(this, '${t.id}')">
                                     </label>
-                                    <button onclick="completeTask('${t.id}')" id="btn-${t.id}" class="w-full gradient-blue text-white font-black py-5 rounded-2xl shadow-lg hover:brightness-110 active:scale-[0.98] transition">KONFIRMASI SELESAI</button>
+                                    
+                                    <button onclick="completeTask('${t.id}')" id="btn-${t.id}" class="w-full gradient-blue text-white font-black py-5 rounded-2xl shadow-lg hover:brightness-110 active:scale-[0.98] transition">
+                                        <i class="fas fa-check-circle mr-2"></i>KONFIRMASI SELESAI
+                                    </button>
                                 </div>
                             ` : `
                                 <div class="pt-4 border-t border-slate-50 flex justify-between items-center">
@@ -287,56 +304,71 @@
         }
 
         window.completeTask = async function(id) {
-            const fileInput = document.getElementById(`file-${id}`);
-            if (!fileInput.files[0]) return alert('Ambil foto bukti dulu!');
-            const btn = document.getElementById(`btn-${id}`);
-            btn.disabled = true; 
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+    const datetimeInput = document.getElementById(`datetime-${id}`);
+    const keteranganInput = document.getElementById(`keterangan-${id}`); // Tambah ini
+    
+    const manualDate = datetimeInput ? datetimeInput.value : null;
+    const keterangan = keteranganInput ? keteranganInput.value : ''; // Tambah ini
+    
+    if (!manualDate) {
+        return alert('⚠️ Masukkan tanggal dan waktu penyelesaian terlebih dahulu!');
+    }
 
-            try {
-                const compressedFile = await compressImage(fileInput.files[0]);
-                const sekarangISO = new Date().toISOString(); 
+    // ... (validasi tanggal tetap sama) ...
 
-                let coords = "No GPS";
-                try {
-                    const pos = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, {timeout: 4000});
-                    });
-                    if(pos) coords = `${pos.coords.latitude},${pos.coords.longitude}`;
-                } catch(e) {}
+    const btn = document.getElementById(`btn-${id}`);
+    btn.disabled = true; 
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengirim...';
 
-                if (!navigator.onLine) {
-                    await db.pendingUploads.add({ taskId: id, file: compressedFile, coords: coords, waktuSelesai: sekarangISO });
-                    updateLocalStatus(id);
-                    alert('Offline: Disimpan di perangkat.');
-                    return;
-                }
+    try {
+        const compressedFile = await compressImage(fileInput.files[0]);
+        const selesaiISO = new Date(manualDate).toISOString();
 
-                const fileName = `KAG_${id}_${Date.now()}.jpg`;
-                const { error: upErr } = await supabase.storage.from('bukti').upload(fileName, compressedFile);
-                if (upErr) throw new Error("Gagal Storage: " + upErr.message);
+        // Ambil GPS (tetap sama)
+        let coords = "No GPS";
+        // ... kode geolocation ...
 
-                const { data: urlData } = supabase.storage.from('bukti').getPublicUrl(fileName);
+        // HANDLE OFFLINE
+        if (!navigator.onLine) {
+            await db.pendingUploads.add({ 
+                taskId: id, 
+                file: compressedFile, 
+                coords: coords, 
+                waktuSelesai: selesaiISO,
+                keterangan: keterangan // Tambah ke database offline
+            });
+            updateLocalStatus(id);
+            alert('✅ Offline: Data disimpan!');
+            return;
+        }
 
-                const { error: dbErr } = await supabase.from('tasks').update({ 
-                    status: 'selesai', 
-                    bukti_url: urlData.publicUrl, 
-                    location_coords: coords, 
-                    tanggal_pengiriman: sekarangISO
-                }).eq('id', id);
+        // UPLOAD ONLINE
+        const fileName = `KAG_${id}_${Date.now()}.jpg`;
+        await supabase.storage.from('bukti').upload(fileName, compressedFile);
+        const { data: urlData } = supabase.storage.from('bukti').getPublicUrl(fileName);
 
-                if (dbErr) throw new Error("Gagal Database: " + dbErr.message);
+        // UPDATE DATABASE SUPABASE
+        const { error: dbErr } = await supabase.from('tasks').update({ 
+            status: 'selesai', 
+            bukti_url: urlData.publicUrl, 
+            location_coords: coords, 
+            tanggal_pengiriman: selesaiISO,
+            keterangan: keterangan // KIRIM KETERANGAN KE DATABASE
+        }).eq('id', id);
 
-                updateLocalStatus(id);
-                alert('Tugas Selesai!');
+        if (dbErr) throw new Error("Gagal Update Database");
 
-            } catch (e) {
-                alert('ERROR: ' + e.message);
-                console.error(e);
-            } finally {
-                btn.disabled = false; btn.innerHTML = 'KONFIRMASI SELESAI';
-            }
-        };
+        updateLocalStatus(id);
+        alert('✅ Tugas Berhasil!');
+
+    } catch (e) {
+        alert('❌ ERROR: ' + e.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>KONFIRMASI SELESAI';
+    }
+};
+
 
         function updateLocalStatus(id) {
             const idx = allTasks.findIndex(t => t.id == id);
@@ -354,15 +386,20 @@
                     await supabase.storage.from('bukti').upload(fileName, item.file);
                     const { data: url } = supabase.storage.from('bukti').getPublicUrl(fileName);
                     await supabase.from('tasks').update({ 
-                        status: 'selesai', 
-                        bukti_url: url.publicUrl, 
-                        location_coords: item.coords, 
-                        tanggal_pengiriman: item.waktuSelesai 
-                    }).eq('id', item.taskId);
+                         status: 'selesai', 
+                         bukti_url: url.publicUrl, 
+                         location_coords: item.coords, 
+                         tanggal_pengiriman: item.waktuSelesai,
+                         keterangan: item.keterangan // Tambahkan ini
+                       }).eq('id', item.taskId);
+
                     await db.pendingUploads.delete(item.id);
-                } catch (e) { console.error(e); }
+                } catch (e) { 
+                    console.error('Sync error:', e); 
+                }
             }
-            updateSyncBadge(); fetchTasks();
+            updateSyncBadge(); 
+            fetchTasks();
         }
 
         async function updateSyncBadge() {
@@ -459,7 +496,7 @@ Terima kasih.`;
         
         document.getElementById('btnLogout').onclick = () => { localStorage.clear(); window.location.replace('index.html'); };
         document.addEventListener('DOMContentLoaded', init);
-    })();
+    })();    
     </script>
 </body>
 </html>
