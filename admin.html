@@ -322,10 +322,10 @@
             if (finalY > 150) { doc.addPage(); finalY = 30; }
             doc.setFontSize(10);
             doc.text("Dibuat Oleh,", 40, finalY);
-            doc.text("Admin Operasional,", 40, finalY + 5);
+            doc.text("Admin / PIC,", 40, finalY + 5);
             doc.line(40, finalY + 25, 90, finalY + 25);
             doc.text("Mengetahui,", doc.internal.pageSize.width - 90, finalY);
-            doc.text("Manager PT KAG,", doc.internal.pageSize.width - 90, finalY + 5);
+            doc.text("HRD/Atasan,", doc.internal.pageSize.width - 90, finalY + 5);
             doc.line(doc.internal.pageSize.width - 90, finalY + 25, doc.internal.pageSize.width - 40, finalY + 25);
 
             doc.save(`KAG_LAPORAN_${namaKurir}_${start}.pdf`);
@@ -356,7 +356,7 @@
             });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-            link.download = `KAG_LAPORAN_${namaKurir}.csv`;
+            link.download = `KAR_LAPORAN_${namaKurir}.csv`;
             link.click();
         };
 
