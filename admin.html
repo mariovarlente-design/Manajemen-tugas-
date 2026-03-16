@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Control Panel - PT KAG</title>
+    <title>Admin Control Panel - PT KAR</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -18,27 +18,35 @@
         .gradient-blue { background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); }
         .gradient-rose { background: linear-gradient(135deg, #f43f5e 0%, #9f1239 100%); }
         .gradient-emerald { background: linear-gradient(135deg, #10b981 0%, #065f46 100%); }
+        
+        /* Animasi Smooth untuk Tabel */
+        #taskBody tr {
+            animation: fadeIn 0.4s ease backwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
     <nav class="bg-white/80 glass border-b border-slate-200 sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-20">
-                <div class="flex items-center">
-                    <img src="https://oyakbndsejhpqsvycdud.supabase.co/storage/v1/object/public/logo/fsimage%20(1).png" class="h-10 mr-3" alt="Logo">
-                    <div>
-                        <span class="font-bold text-slate-900 block leading-tight uppercase">PT Klase Auto Graha</span>
-                        <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Courier Admin Panel</span>
-                    </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex justify-between items-center">
+            <div class="flex items-center">
+                <img src="https://oyakbndsejhpqsvycdud.supabase.co/storage/v1/object/public/logo/fsimage%20(1).png" class="h-10 mr-3" alt="Logo">
+                <div>
+                    <span class="font-bold text-slate-900 block leading-tight uppercase">PT Klase Auto Graha</span>
+                    <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Courier Admin Panel</span>
                 </div>
-                <button id="btnLogout" class="bg-rose-50 text-rose-600 px-4 py-2 rounded-xl font-bold text-sm hover:bg-rose-100 transition">Logout</button>
             </div>
+            <button id="btnLogout" class="bg-rose-50 text-rose-600 px-4 py-2 rounded-xl font-bold text-sm hover:bg-rose-100 transition">Logout</button>
         </div>
     </nav>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow">
-
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="gradient-blue p-6 rounded-[2rem] shadow-xl text-white">
                 <p class="text-blue-100 text-[10px] font-bold uppercase mb-1">Total Tugas</p>
@@ -62,7 +70,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="md:col-span-1">
                         <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">No Surat</label>
-                        <input type="text" id="no_surat" placeholder="No Surat / Referensi" class="w-full bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="no_surat" placeholder="No Surat" class="w-full bg-slate-50 border-0 rounded-xl px-5 py-3 outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div class="md:col-span-1">
                         <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Tgl Posting (Manual)</label>
@@ -77,24 +85,20 @@
             </div>
 
             <div class="bg-slate-900 rounded-[2rem] p-8 text-white shadow-xl">
-                <h2 class="text-lg font-bold mb-6 flex items-center"><i class="fas fa-filter mr-2 text-blue-400"></i> Laporan</h2>
+                <h2 class="text-lg font-bold mb-6 flex items-center"><i class="fas fa-file-export mr-2 text-blue-400"></i> Laporan</h2>
                 <div class="space-y-4">
                     <div class="grid grid-cols-2 gap-3">
                         <input type="date" id="filterStart" class="bg-slate-800 border-0 rounded-xl px-3 py-2 text-xs text-white">
                         <input type="date" id="filterEnd" class="bg-slate-800 border-0 rounded-xl px-3 py-2 text-xs text-white">
                     </div>
-                    <input type="text" id="searchInput" placeholder="Cari No Surat / PT..." class="w-full bg-slate-800 border-0 rounded-xl px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                    <button id="btnPdf" class="w-full bg-rose-600 hover:bg-rose-700 py-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
-                        <i class="fas fa-file-pdf"></i> PDF LANDSCAPE
-                    </button>
-                    <button id="btnExcel" class="w-full bg-emerald-600 hover:bg-emerald-700 py-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
-                        <i class="fas fa-file-excel"></i> EXCEL / CSV
-                    </button>
+                    <input type="text" id="searchInput" placeholder="Cari data..." class="w-full bg-slate-800 border-0 rounded-xl px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                    <button id="btnPdf" class="w-full bg-rose-600 hover:bg-rose-700 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i class="fas fa-file-pdf"></i> PDF LANDSCAPE</button>
+                    <button id="btnExcel" class="w-full bg-emerald-600 hover:bg-emerald-700 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i class="fas fa-file-excel"></i> EXCEL / CSV</button>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden mb-12">
+        <div class="bg-blue rounded-[2rem] shadow-sm border border-slate-400 overflow-hidden mb-12">
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
@@ -114,28 +118,38 @@
         </div>
     </main>
 
+    <footer class="mt-auto py-10 border-t border-slate-200/60 bg-white/50 backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <div class="inline-flex items-center gap-3 px-6 py-2 bg-white rounded-full shadow-sm border border-slate-100">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
+                </span>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
+                    Created by: <span class="text-slate-900">rionurmansyah</span> 
+                    <span class="mx-2 text-slate-300">●</span> 
+                    <span class="text-blue-600">2026</span>
+                </p>
+            </div>
+        </div>
+    </footer>
+
     <div id="editModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg p-8">
-            <h3 class="text-xl font-bold mb-6"><i class="fas fa-edit text-blue-600 mr-2"></i> Edit Tugas</h3>
+            <h3 class="text-xl font-bold mb-6 flex items-center gap-2"><i class="fas fa-edit text-blue-600"></i> Edit Data</h3>
             <input type="hidden" id="edit_id">
             <div class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase">No Surat</label>
-                        <input type="text" id="edit_no_surat" class="w-full bg-slate-50 rounded-xl px-4 py-2">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase">Tgl Posting</label>
-                        <input type="date" id="edit_created_at" class="w-full bg-slate-50 rounded-xl px-4 py-2">
-                    </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="text" id="edit_no_surat" placeholder="No Surat" class="bg-slate-50 rounded-xl px-4 py-2 outline-none border-0">
+                    <input type="date" id="edit_created_at" class="bg-slate-50 rounded-xl px-4 py-2 outline-none border-0">
                 </div>
-                <input type="text" id="edit_nama_pt" placeholder="Nama PT" class="w-full bg-slate-50 rounded-xl px-4 py-2">
-                <input type="text" id="edit_penerima" placeholder="Penerima" class="w-full bg-slate-50 rounded-xl px-4 py-2">
-                <textarea id="edit_keterangan" placeholder="Keterangan" class="w-full bg-slate-50 rounded-xl px-4 py-2 h-20"></textarea>
+                <input type="text" id="edit_nama_pt" placeholder="Nama PT" class="w-full bg-slate-50 rounded-xl px-4 py-2 border-0">
+                <input type="text" id="edit_penerima" placeholder="Penerima" class="w-full bg-slate-50 rounded-xl px-4 py-2 border-0">
+                <textarea id="edit_keterangan" placeholder="Keterangan" class="w-full bg-slate-50 rounded-xl px-4 py-2 border-0 h-20"></textarea>
             </div>
-            <div class="flex gap-3 mt-6">
-                <button onclick="closeEdit()" class="flex-1 py-2 font-bold text-slate-400">Batal</button>
-                <button onclick="saveEdit()" class="flex-1 gradient-blue text-white py-2 rounded-xl font-bold">Simpan</button>
+            <div class="flex gap-3 mt-8">
+                <button onclick="closeEdit()" class="flex-1 font-bold text-slate-400">Batal</button>
+                <button onclick="saveEdit()" class="flex-1 gradient-blue text-white py-3 rounded-xl font-bold shadow-lg">Simpan</button>
             </div>
         </div>
     </div>
@@ -150,16 +164,13 @@
         let allTasks = [];
         let profileMap = {};
 
-        // Set default date hari ini
         document.getElementById('tgl_posting_manual').valueAsDate = new Date();
 
         async function init() {
             if (localStorage.getItem('role') !== 'admin') { window.location.href = 'index.html'; return; }
             await loadProfiles();
             await loadTasks();
-            
             supabase.channel('db-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => loadTasks()).subscribe();
-            
             document.getElementById('searchInput').oninput = applyFilters;
             document.getElementById('filterStart').onchange = applyFilters;
             document.getElementById('filterEnd').onchange = applyFilters;
@@ -169,10 +180,7 @@
             const { data } = await supabase.from('profiles').select('id, full_name');
             const select = document.getElementById('select_kurir');
             select.innerHTML = '<option value="">-- Pilih Kurir --</option>';
-            if (data) data.forEach(p => {
-                profileMap[p.id] = p.full_name;
-                select.innerHTML += `<option value="${p.id}">${p.full_name}</option>`;
-            });
+            if (data) data.forEach(p => { profileMap[p.id] = p.full_name; select.innerHTML += `<option value="${p.id}">${p.full_name}</option>`; });
         }
 
         async function loadTasks() {
@@ -184,12 +192,10 @@
             const start = document.getElementById('filterStart').value;
             const end = document.getElementById('filterEnd').value;
             const search = document.getElementById('searchInput').value.toLowerCase();
-
             const filtered = allTasks.filter(t => {
                 const dateTugas = t.created_at ? t.created_at.split('T')[0] : "";
-                const matchDate = (!start || dateTugas >= start) && (!end || dateTugas <= end);
-                const matchSearch = (t.nama_pt?.toLowerCase().includes(search)) || (t.no_surat?.toLowerCase().includes(search));
-                return matchDate && matchSearch;
+                return (!start || dateTugas >= start) && (!end || dateTugas <= end) && 
+                       ((t.nama_pt?.toLowerCase().includes(search)) || (t.no_surat?.toLowerCase().includes(search)));
             });
             renderTable(filtered);
             updateStats(filtered);
@@ -206,37 +212,27 @@
             tbody.innerHTML = '';
             data.forEach(t => {
                 const isDone = t.status === 'selesai';
-                // Format tanggal dari type DATE (YYYY-MM-DD)
-                const tglPost = t.created_at ? t.created_at.split('T')[0] : '-';
-                const tglKirim = t.tanggal_pengiriman ? t.tanggal_pengiriman : '-';
-                
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition text-[11px] font-bold">
+                    <tr class="text-[11px] font-bold">
                         <td class="px-8 py-5 text-blue-600">${t.no_surat || '-'}</td>
                         <td class="px-8 py-5">
-                            <div class="text-slate-400">Post: ${tglPost}</div>
-                            <div class="${isDone ? 'text-emerald-600' : 'text-rose-400'}">Kirim: ${tglKirim}</div>
+                            <div class="text-slate-400">Post: ${t.created_at ? t.created_at.split('T')[0] : '-'}</div>
+                            <div class="${isDone ? 'text-emerald-600' : 'text-rose-400'}">Kirim: ${t.tanggal_pengiriman || '-'}</div>
                         </td>
                         <td class="px-8 py-5">
                             <div class="text-slate-800">${t.nama_pt || '-'}</div>
                             <div class="text-[9px] text-slate-400 font-normal italic">${t.penerima || '-'}</div>
                         </td>
-                        <td class="px-8 py-5 text-slate-500">${profileMap[t.assigned_to] || 'Kurir'}</td>
+                        <td class="px-8 py-5 text-slate-500">${profileMap[t.assigned_to] || 'User'}</td>
                         <td class="px-8 py-5">
-                            <span class="px-3 py-1 rounded-full text-[9px] uppercase ${isDone ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">
-                                ${t.status}
-                            </span>
+                            <span class="px-3 py-1 rounded-full text-[9px] uppercase ${isDone ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">${t.status}</span>
                         </td>
-                        <td class="px-8 py-5 text-slate-500 font-normal italic max-w-[150px] truncate">${t.keterangan || '-'}</td>
-                        <td class="px-8 py-5">
-                            <div class="flex justify-center gap-4">
+                        <td class="px-8 py-5 text-slate-500 font-normal italic max-w-[100px] truncate">${t.keterangan || '-'}</td>
+                        <td class="px-8 py-5 text-center">
+                            <div class="flex justify-center gap-3">
                                 ${t.bukti_url ? `<a href="${t.bukti_url}" target="_blank" class="text-blue-500"><i class="fas fa-image"></i></a>` : ''}
-                                <button onclick="openEdit('${t.id}', '${t.no_surat||''}', '${tglPost}', '${t.nama_pt||''}', '${t.penerima||''}', '${t.keterangan||''}')" class="text-amber-500">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button onclick="deleteTask('${t.id}')" class="text-slate-300 hover:text-rose-600">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                                <button onclick="openEdit('${t.id}', '${t.no_surat||''}', '${t.created_at?t.created_at.split('T')[0]:''}', '${t.nama_pt||''}', '${t.penerima||''}', '${t.keterangan||''}')" class="text-amber-500"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteTask('${t.id}')" class="text-slate-300 hover:text-rose-600"><i class="fas fa-trash"></i></button>
                             </div>
                         </td>
                     </tr>`;
@@ -244,7 +240,7 @@
         }
 
         document.getElementById('btnAssign').onclick = async () => {
-            const manualDate = document.getElementById('tgl_posting_manual').value;
+            const btn = document.getElementById('btnAssign');
             const payload = {
                 no_surat: document.getElementById('no_surat').value,
                 nama_pt: document.getElementById('nama_pt').value,
@@ -252,74 +248,47 @@
                 alamat_singkat: document.getElementById('alamat').value,
                 assigned_to: document.getElementById('select_kurir').value,
                 status: 'pending',
-                created_at: manualDate // Mengirim format YYYY-MM-DD
+                created_at: document.getElementById('tgl_posting_manual').value
             };
             if(!payload.nama_pt || !payload.assigned_to) return alert('Lengkapi data!');
+            btn.disabled = true; btn.innerText = "MENGIRIM...";
             const { error } = await supabase.from('tasks').insert([payload]);
-            if(!error) { alert('Tugas Berhasil!'); loadTasks(); }
+            if(!error) {
+                alert('Berhasil!');
+                ['no_surat','nama_pt','penerima','alamat','select_kurir'].forEach(id => document.getElementById(id).value = '');
+                document.getElementById('tgl_posting_manual').valueAsDate = new Date();
+                loadTasks();
+            }
+            btn.disabled = false; btn.innerText = "ASSIGN KURIR";
         };
 
         window.openEdit = (id, no, tgl, pt, penerima, ket) => {
-            document.getElementById('edit_id').value = id;
-            document.getElementById('edit_no_surat').value = no;
-            document.getElementById('edit_created_at').value = tgl;
-            document.getElementById('edit_nama_pt').value = pt;
-            document.getElementById('edit_penerima').value = penerima;
-            document.getElementById('edit_keterangan').value = ket;
+            document.getElementById('edit_id').value = id; document.getElementById('edit_no_surat').value = no;
+            document.getElementById('edit_created_at').value = tgl; document.getElementById('edit_nama_pt').value = pt;
+            document.getElementById('edit_penerima').value = penerima; document.getElementById('edit_keterangan').value = ket;
             document.getElementById('editModal').classList.remove('hidden');
         };
-
         window.closeEdit = () => document.getElementById('editModal').classList.add('hidden');
-
         window.saveEdit = async () => {
-            const id = document.getElementById('edit_id').value;
-            const updateData = {
-                no_surat: document.getElementById('edit_no_surat').value,
-                created_at: document.getElementById('edit_created_at').value,
-                nama_pt: document.getElementById('edit_nama_pt').value,
-                penerima: document.getElementById('edit_penerima').value,
-                keterangan: document.getElementById('edit_keterangan').value
-            };
-            const { error } = await supabase.from('tasks').update(updateData).eq('id', id);
-            if(!error) { closeEdit(); loadTasks(); }
+            const data = { no_surat: document.getElementById('edit_no_surat').value, created_at: document.getElementById('edit_created_at').value,
+                nama_pt: document.getElementById('edit_nama_pt').value, penerima: document.getElementById('edit_penerima').value, keterangan: document.getElementById('edit_keterangan').value };
+            await supabase.from('tasks').update(data).eq('id', document.getElementById('edit_id').value);
+            closeEdit(); loadTasks();
         };
+        window.deleteTask = async (id) => { if(confirm('Hapus?')) { await supabase.from('tasks').delete().eq('id', id); loadTasks(); } };
 
-        window.deleteTask = async (id) => {
-            if(confirm('Hapus tugas ini?')) { await supabase.from('tasks').delete().eq('id', id); loadTasks(); }
-        };
-
-        // Export PDF & Excel
         document.getElementById('btnPdf').onclick = () => {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4');
-            const rows = allTasks.map(t => [
-                t.no_surat || '-',
-                t.created_at ? t.created_at.split('T')[0] : '-',
-                t.tanggal_pengiriman || '-',
-                t.nama_pt || '-',
-                t.penerima || '-',
-                profileMap[t.assigned_to] || '-',
-                t.status,
-                t.keterangan || '-'
-            ]);
-            doc.autoTable({
-                head: [['No Surat', 'Post', 'Kirim', 'Tujuan', 'Penerima', 'Kurir', 'Status', 'Keterangan']],
-                body: rows,
-                styles: { fontSize: 7 }
-            });
+            const { jsPDF } = window.jspdf; const doc = new jsPDF('l', 'mm', 'a4');
+            const rows = allTasks.map(t => [t.no_surat, t.created_at?.split('T')[0], t.tanggal_pengiriman, t.nama_pt, t.penerima, profileMap[t.assigned_to], t.status, t.keterangan]);
+            doc.autoTable({ head: [['No Surat', 'Tgl Post', 'Tgl Kirim', 'Tujuan', 'Penerima', 'Kurir', 'Status', 'Keterangan']], body: rows });
             doc.save('Laporan_KAG.pdf');
         };
 
         document.getElementById('btnExcel').onclick = () => {
-            let csv = ["\uFEFFNo Surat,Tgl Posting,Tgl Pengiriman,Tujuan,Penerima,Kurir,Status,Keterangan"];
-            allTasks.forEach(t => {
-                csv.push([`"${t.no_surat}"`,`"${t.created_at}"`,`"${t.tanggal_pengiriman}"`,`"${t.nama_pt}"`,`"${t.penerima}"`,`"${profileMap[t.assigned_to]}"`,`"${t.status}"`,`"${t.keterangan}"`].join(','));
-            });
-            const blob = new Blob([csv.join("\n")], { type: "text/csv;charset=utf-8" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `Laporan_KAG.csv`;
-            link.click();
+            let csv = ["\uFEFFNo Surat,Tgl Post,Tgl Kirim,Tujuan,Penerima,Kurir,Status,Ket"];
+            allTasks.forEach(t => csv.push([`"${t.no_surat}"`,`"${t.created_at}"`,`"${t.tanggal_pengiriman}"`,`"${t.nama_pt}"`,`"${t.penerima}"`,`"${profileMap[t.assigned_to]}"`,`"${t.status}"`,`"${t.keterangan}"`].join(',')));
+            const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv.join("\n")], { type: "text/csv" }));
+            link.download = `Laporan_KAG.csv`; link.click();
         };
 
         document.getElementById('btnLogout').onclick = () => { localStorage.clear(); window.location.href = 'index.html'; };
