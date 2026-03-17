@@ -1,23 +1,21 @@
 {
-  "name": "KAR Mobile Courier",
+  "name": "KAR Mobile Admin",
   "short_name": "KAR Mobile",
-  "description": "Aplikasi Manajemen Kurir PT Klase Auto Graha",
+  "description": "Admin Control Panel PT Klase Auto Graha",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#1e40af",
+  "background_color": "#2563eb",
+  "theme_color": "#2563eb",
   "icons": [
     {
       "src": "https://oyakbndsejhpqsvycdud.supabase.co/storage/v1/object/public/logo/fsimage%20(1).png",
-      "sizes": "100x100",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "sizes": "192x192",
+      "type": "image/png"
     },
     {
       "src": "https://oyakbndsejhpqsvycdud.supabase.co/storage/v1/object/public/logo/fsimage%20(1).png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     }
   ]
 }
