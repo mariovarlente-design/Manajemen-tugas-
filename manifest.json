@@ -9,7 +9,7 @@
   "icons": [
     {
       "src": "https://oyakbndsejhpqsvycdud.supabase.co/storage/v1/object/public/logo/fsimage%20(1).png",
-      "sizes": "192x192",
+      "sizes": "100x100",
       "type": "image/png",
       "purpose": "any maskable"
     },
