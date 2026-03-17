@@ -8,14 +8,16 @@
   "theme_color": "#2563eb",
   "icons": [
     {
-      "src": "https://oyakbndsejhpqsvycdud.supabase.co/storage/v1/object/public/logo/fsimage%20(1).png",
+      "src": "https://img.icons8.com/fluency/192/delivery-man.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "https://oyakbndsejhpqsvycdud.supabase.co/storage/v1/object/public/logo/fsimage%20(1).png",
+      "src": "https://img.icons8.com/fluency/512/delivery-man.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
