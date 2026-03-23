@@ -4,7 +4,7 @@
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#FFFFFF",
-  "theme_color": "#2563eb",
+  "theme_color": "#FFFFFF",
   "icons": [
     {
       "src": "https://oyakbndsejhpqsvycdud.supabase.co/storage/v1/object/public/logo/fsimage%20(1).png",
