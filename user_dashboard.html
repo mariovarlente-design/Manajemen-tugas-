@@ -73,7 +73,7 @@
                     <span id="onlineStatus" class="text-[9px] font-bold px-2 py-1 rounded-md bg-emerald-100 text-emerald-600 uppercase">Online</span>
                 </div>
             </div>
-            
+
             <div class="clock-container rounded-2xl p-4 shadow-lg text-white flex justify-between items-center">
                 <div>
                     <p id="realtimeDate" class="text-[10px] font-bold text-blue-400 uppercase tracking-tighter">---</p>
@@ -110,11 +110,11 @@
             updateOnlineStatus();
             window.addEventListener('online', updateOnlineStatus);
             window.addEventListener('offline', updateOnlineStatus);
-            
+
             await loadProfile();
             await fetchTasks();
             updateSyncBadge();
-            
+
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js').catch(() => {});
             }
@@ -173,7 +173,7 @@
         function renderTasks() {
             const container = document.getElementById('taskList');
             const filtered = allTasks.filter(t => t.status === activeFilter);
-            
+
             if (filtered.length === 0) {
                 container.innerHTML = `<div class="text-center py-20"><i class="fas fa-folder-open text-slate-200 text-5xl mb-4"></i><p class="text-slate-400 font-bold italic">Kosong</p></div>`;
                 return;
@@ -217,7 +217,8 @@
                                             <i class="fas fa-camera text-2xl text-slate-300 mb-2"></i>
                                             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Ambil Foto Bukti</p>
                                         </div>
-                                        <input type="file" id="file-${t.id}" accept="image/*" capture="environment" class="hidden" onchange="previewImage(this, '${t.id}')">
+                                      <input type="file" id="file-${t.id}" accept="image/*" class="hidden" onchange="previewImage(this, '${t.id}')">
+
                                     </label>
                                     
                                     <button onclick="completeTask('${t.id}')" id="btn-${t.id}" class="w-full gradient-blue text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition-all">KONFIRMASI SELESAI</button>
