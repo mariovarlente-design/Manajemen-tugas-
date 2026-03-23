@@ -3,7 +3,7 @@
   "short_name": "KAR Mobile",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#2563eb",
+  "background_color": "#FFFFFF",
   "theme_color": "#2563eb",
   "icons": [
     {
