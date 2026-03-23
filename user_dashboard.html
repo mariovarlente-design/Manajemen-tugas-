@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KAR Mobile - Courier Pro</title>
-    
+
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#FFFFFF">
@@ -21,10 +21,6 @@
         .gradient-blue { background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); }
         .tab-active { background: white !important; color: #1e40af !important; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         .clock-container { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-left: 4px solid #3b82f6; }
-        
-        #waFloatingWrapper { animation: floatWA 3s ease-in-out infinite; z-index: 9999; }
-        @keyframes floatWA { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
-        
         .animate-slide-up { animation: slideUp 0.3s ease-out; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
@@ -38,35 +34,31 @@
                     <img src="https://oyakbndsejhpqsvycdud.supabase.co/storage/v1/object/public/logo/fsimage%20(1).png" class="h-7 invert" alt="Logo">
                 </div>
                 <div>
-                    <span class="text-slate-900 font-extrabold text-sm block leading-none tracking-tight">KAR MOBILE</span>
-                    <span class="text-[10px] text-emerald-600 font-bold uppercase tracking-[0.2em]">Courier Management System</span>
+                    <span class="text-slate-900 font-extrabold text-sm block leading-none tracking-tight uppercase">KAR Mobile</span>
+                    <span class="text-[9px] text-emerald-600 font-bold uppercase tracking-[0.2em]">Courier System</span>
                 </div>
             </div>
             <button id="btnLogout" class="w-10 h-10 flex items-center justify-center rounded-xl bg-rose-50 text-rose-500 active:scale-90 transition">
-                <i class="fas fa-power-off"></i>
+                <i class="fas fa-power-off text-sm"></i>
             </button>
         </div>
     </nav>
-
-    <div id="waFloatingWrapper" class="fixed bottom-6 right-6">
-        <a href="https://wa.me/6285793117746" target="_blank" class="bg-emerald-500 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl border-4 border-white">
-            <i class="fab fa-whatsapp"></i>
-        </a>
-    </div>
 
     <main class="max-w-xl mx-auto px-5 py-6 flex-grow w-full">
         <div class="mb-6 space-y-4">
             <div class="flex justify-between items-end">
                 <div>
-                    <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Courier</p>
-                    <h1 id="userNameDisplay" class="text-2xl font-black text-slate-800 italic">...</h1>
+                    <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Courier Profil</p>
+                    <h1 id="userNameDisplay" class="text-2xl font-black text-slate-800 italic uppercase">...</h1>
                 </div>
-                <span id="onlineStatus" class="text-[9px] font-bold px-2 py-1 rounded-md bg-emerald-100 text-emerald-600 uppercase">Online</span>
+                <div class="flex items-center gap-1.5 bg-emerald-100 px-2 py-1 rounded-md" id="statusBadge">
+                    <span id="onlineStatus" class="text-[9px] font-bold text-emerald-600 uppercase">Online</span>
+                </div>
             </div>
-            
+
             <div class="clock-container rounded-2xl p-4 shadow-lg text-white flex justify-between items-center">
                 <div>
-                    <p id="realtimeDate" class="text-[10px] font-bold text-blue-400 uppercase tracking-tighter">Memuat Hari...</p>
+                    <p id="realtimeDate" class="text-[10px] font-bold text-blue-400 uppercase tracking-tighter">Memuat...</p>
                     <p id="realtimeClock" class="text-3xl font-black tracking-tighter tabular-nums">00:00:00</p>
                 </div>
                 <i class="fas fa-clock text-blue-500/30 text-3xl"></i>
@@ -78,85 +70,55 @@
             <button id="tabSelesai" class="flex-1 py-3 text-xs font-black uppercase rounded-xl transition text-slate-500" onclick="switchTab('selesai')">Riwayat</button>
         </div>
 
-        <div id="taskList" class="space-y-6 pb-24"></div>
+        <div id="taskList" class="space-y-6 pb-12"></div>
     </main>
-</main>
-        <footer class="mt-auto py-10 border-t border-slate-200/60 bg-white/50 backdrop-blur-sm">
-        <div class="max-w-7xl mx-auto px-4 text-center">
-            <div class="inline-flex items-center gap-3 px-6 py-2 bg-white rounded-full shadow-sm border border-slate-100">
-                <span class="relative flex h-2 w-2">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
-                </span>
-                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
-                    Developed by: <span class="text-slate-900">rionurmansyah</span> 
-                    <span class="mx-2 text-slate-300">●</span> 
-                    <span class="text-blue-600">2026</span>
-                </p>
-            </div>
-        </div>
-    </footer>
 
     <div id="photoSourceModal" class="fixed inset-0 bg-black/50 z-[60] hidden flex items-end justify-center" onclick="if(event.target === this) closePhotoModal()">
         <div class="bg-white rounded-t-3xl w-full max-w-xl p-6 animate-slide-up">
             <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
-            <h3 class="font-bold text-slate-800 mb-6 text-center text-sm uppercase">Ambil Bukti Foto</h3>
             <div class="grid grid-cols-2 gap-4">
                 <button onclick="selectPhotoSource('camera')" class="flex flex-col items-center gap-3 p-5 rounded-2xl bg-blue-50 active:scale-95 transition">
                     <i class="fas fa-camera text-2xl text-blue-600"></i>
-                    <span class="text-xs font-bold text-slate-700">Kamera</span>
+                    <span class="text-[10px] font-bold text-slate-700 uppercase">Kamera</span>
                 </button>
                 <button onclick="selectPhotoSource('gallery')" class="flex flex-col items-center gap-3 p-5 rounded-2xl bg-emerald-50 active:scale-95 transition">
                     <i class="fas fa-images text-2xl text-emerald-600"></i>
-                    <span class="text-xs font-bold text-slate-700">Galeri</span>
+                    <span class="text-[10px] font-bold text-slate-700 uppercase">Galeri</span>
                 </button>
             </div>
-            <button onclick="closePhotoModal()" class="w-full mt-6 py-3 font-bold text-slate-400 text-xs">BATALKAN</button>
+            <button onclick="closePhotoModal()" class="w-full mt-6 py-3 font-bold text-slate-400 text-[10px] uppercase">Batal</button>
         </div>
     </div>
 
     <script>
     (function() {
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(e => console.log(e));
-            });
-        }
-
         const SUPABASE_URL = 'https://oyakbndsejhpqsvycdud.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95YWtibmRzZWpocHFzdnljZHVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzODYwMjksImV4cCI6MjA4ODk2MjAyOX0.oH7XK00yZNKAuDF2GnXtdU3PUYRWtMQ4I43Q13AC9KE';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         const myId = localStorage.getItem('userId');
-        
+
         let allTasks = [];
-        let currentTaskId = null;
+        let editingTaskId = null;
         let activeFilter = 'pending';
+        let currentPhotoId = null;
 
-        function updateClock() {
+        // Clock
+        setInterval(() => {
             const now = new Date();
-            const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-            document.getElementById('realtimeDate').innerText = now.toLocaleDateString('id-ID', options);
+            document.getElementById('realtimeDate').innerText = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
             document.getElementById('realtimeClock').innerText = now.toLocaleTimeString('id-ID');
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
+        }, 1000);
 
+        // Photo Logic
         window.closePhotoModal = () => document.getElementById('photoSourceModal').classList.add('hidden');
-        window.openPhotoSelector = (id) => {
-            currentTaskId = id;
-            document.getElementById('photoSourceModal').classList.remove('hidden');
-        };
-
+        window.openPhotoSelector = (id) => { currentPhotoId = id; document.getElementById('photoSourceModal').classList.remove('hidden'); };
         window.selectPhotoSource = (source) => {
-            const input = document.getElementById(`file-${currentTaskId}`);
-            if (!input) return;
-            input.value = '';
+            const input = document.getElementById(`file-${currentPhotoId}`);
             if (source === 'camera') input.setAttribute('capture', 'environment');
             else input.removeAttribute('capture');
             closePhotoModal();
             setTimeout(() => input.click(), 400);
         };
-
         window.previewImage = (input, id) => {
             const file = input.files[0];
             if (file) {
@@ -172,90 +134,78 @@
 
         window.switchTab = (status) => {
             activeFilter = status;
+            editingTaskId = null;
             document.getElementById('tabPending').classList.toggle('tab-active', status === 'pending');
             document.getElementById('tabSelesai').classList.toggle('tab-active', status === 'selesai');
             renderTasks();
         };
 
-        const compressImage = async (file) => {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let w = img.width, h = img.height;
-                        if (w > 1000) { h *= 1000/w; w = 1000; }
-                        canvas.width = w; canvas.height = h;
-                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                        canvas.toBlob(b => resolve(new File([b], file.name, {type:'image/jpeg'})), 'image/jpeg', 0.7);
-                    };
-                };
-            });
-        };
-
-        const renderTasks = () => {
+        // RENDER CARDS
+        window.renderTasks = () => {
             const container = document.getElementById('taskList');
-            const filtered = allTasks.filter(t => t.status === activeFilter);
-            
+            const filtered = allTasks.filter(t => t.status === activeFilter || t.id.toString() === editingTaskId);
+
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="text-center py-20 text-slate-300 font-bold italic">Kosong</div>`;
+                container.innerHTML = `<div class="text-center py-20 text-slate-300 font-bold italic text-sm">Belum ada data</div>`;
                 return;
             }
 
             container.innerHTML = filtered.map(t => {
-                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(t.alamat_singkat + ' ' + t.nama_pt)}`;
-                
+                const isEditing = t.id.toString() === editingTaskId;
+                const showForm = t.status === 'pending' || isEditing;
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(t.alamat_singkat + ' ' + (t.nama_pt || ''))}`;
+
                 return `
                 <div class="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm mb-4">
                     <div class="flex justify-between items-start mb-2">
-                        <span class="text-[9px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-black">${t.no_surat || 'DOC'}</span>
-                        <span class="text-[9px] text-slate-400 font-bold">${new Date(t.created_at).toLocaleDateString('id-ID')}</span>
+                        <span class="text-[9px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded font-black uppercase">${t.no_surat || 'DOC'}</span>
+                        <span class="text-[9px] text-slate-400 font-bold uppercase">${new Date(t.created_at).toLocaleDateString('id-ID')}</span>
                     </div>
-                    <h3 class="font-black text-slate-800 text-lg leading-tight mb-2">${t.nama_pt}</h3>
+                    <h3 class="font-black text-slate-800 text-lg leading-tight mb-2 uppercase">${t.nama_pt}</h3>
                     
-                    <a href="${mapsUrl}" target="_blank" class="flex items-center gap-2 text-xs text-slate-500 font-bold mb-4">
-                        <div class="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 text-xs">
-                            <i class="fas fa-location-arrow"></i>
-                        </div>
-                        <span class="underline decoration-dotted underline-offset-4">${t.alamat_singkat || 'Klik Lokasi'}</span>
+                    <a href="${mapsUrl}" target="_blank" class="flex items-center gap-2 text-xs text-slate-500 font-bold mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <i class="fas fa-map-marker-alt text-rose-500"></i>
+                        <span class="truncate underline decoration-dotted">${t.alamat_singkat || 'Klik Lokasi'}</span>
                     </a>
                     
-                    ${t.status === 'pending' ? `
-                        <div class="space-y-4 pt-4 border-t border-slate-50">
+                    ${showForm ? `
+                        <div class="space-y-4 pt-4 border-t border-slate-100">
                             <div>
-                                <label class="text-[9px] font-black text-slate-400 uppercase ml-1">Waktu Diterima</label>
-                                <input type="datetime-local" id="datetime-${t.id}" class="w-full bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs font-bold outline-none focus:border-blue-500">
+                                <label class="text-[9px] font-black text-slate-400 uppercase ml-1 tracking-widest">Update Alamat (Jika Salah)</label>
+                                <input type="text" id="alamat-${t.id}" placeholder="Ketik alamat baru..." class="w-full bg-slate-100/50 p-3 rounded-xl border border-slate-200 text-xs font-bold outline-none focus:bg-white focus:border-blue-400">
                             </div>
                             <div>
-                                <label class="text-[9px] font-black text-slate-400 uppercase ml-1">Nama Penerima</label>
-                                <input type="text" id="penerima-${t.id}" placeholder="Siapa yang menerima?" class="w-full bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs font-bold outline-none focus:border-blue-500">
+                                <label class="text-[9px] font-black text-slate-400 uppercase ml-1 tracking-widest">Waktu & Penerima</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="datetime-local" id="datetime-${t.id}" class="bg-slate-100/50 p-3 rounded-xl border border-slate-200 text-[10px] font-bold outline-none">
+                                    <input type="text" id="penerima-${t.id}" placeholder="Penerima..." class="bg-slate-100/50 p-3 rounded-xl border border-slate-200 text-xs font-bold outline-none">
+                                </div>
                             </div>
-                            <div>
-                                <label class="text-[9px] font-black text-slate-400 uppercase ml-1">Keterangan Tambahan</label>
-                                <textarea id="keterangan-${t.id}" placeholder="Catatan tambahan (opsional)..." class="w-full bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs font-bold h-16 resize-none outline-none focus:border-blue-500"></textarea>
-                            </div>
+                            <textarea id="keterangan-${t.id}" placeholder="Keterangan tambahan..." class="w-full bg-slate-100/50 p-3 rounded-xl border border-slate-200 text-xs font-bold h-16 resize-none outline-none"></textarea>
                             
-                            <div onclick="openPhotoSelector('${t.id}')" class="h-40 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center relative overflow-hidden bg-slate-50 active:bg-slate-100 cursor-pointer">
-                                <div id="preview-container-${t.id}" class="absolute inset-0 hidden"><img id="img-preview-${t.id}" class="w-full h-full object-cover"></div>
-                                <div id="placeholder-${t.id}" class="text-center text-slate-300">
-                                    <i class="fas fa-camera text-2xl mb-2"></i>
-                                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Ambil Foto Bukti</p>
+                            <div onclick="openPhotoSelector('${t.id}')" class="h-40 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center relative overflow-hidden bg-slate-50 cursor-pointer">
+                                <div id="preview-container-${t.id}" class="${t.bukti_url ? '' : 'hidden'} absolute inset-0"><img id="img-preview-${t.id}" src="${t.bukti_url || ''}" class="w-full h-full object-cover"></div>
+                                <div id="placeholder-${t.id}" class="${t.bukti_url ? 'hidden' : ''} text-center text-slate-300">
+                                    <i class="fas fa-camera text-2xl mb-1"></i>
+                                    <p class="text-[9px] font-black uppercase tracking-widest">Update Foto</p>
                                 </div>
                             </div>
                             <input type="file" id="file-${t.id}" accept="image/*" class="hidden" onchange="previewImage(this, '${t.id}')">
                             
-                            <button onclick="completeTask('${t.id}')" id="btn-${t.id}" class="w-full gradient-blue text-white py-4 rounded-2xl font-black text-xs shadow-lg active:scale-95 transition-all">KONFIRMASI SELESAI</button>
+                            <div class="flex gap-2">
+                                ${isEditing ? `<button onclick="cancelEdit()" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-black text-[10px] uppercase">Batal</button>` : ''}
+                                <button onclick="completeTask('${t.id}')" id="btn-${t.id}" class="flex-[2] gradient-blue text-white py-4 rounded-2xl font-black text-[10px] shadow-lg active:scale-95 uppercase tracking-widest">Simpan Data</button>
+                            </div>
                         </div>
                     ` : `
-                        <div class="pt-4 border-t border-slate-50 space-y-1">
-                            <p class="text-[10px] text-slate-400 font-bold uppercase">Penerima: <span class="text-slate-700">${t.penerima || '-'}</span></p>
-                            <p class="text-[11px] text-slate-500 italic mb-2">"${t.keterangan || '-'}"</p>
+                        <div class="pt-4 border-t border-slate-50 space-y-2">
+                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-tight italic">Penerima: <span class="text-slate-900 not-italic">${t.penerima || '-'}</span></p>
                             <div class="flex justify-between items-center">
-                                <span class="text-emerald-500 font-black text-[10px] uppercase tracking-widest"><i class="fas fa-check-circle mr-1"></i> SELESAI</span>
-                                <a href="${t.bukti_url}" target="_blank" class="text-[9px] bg-slate-100 px-3 py-2 rounded-lg font-black text-slate-600 uppercase">Lihat Foto</a>
+                                <span class="text-emerald-500 font-black text-[9px] uppercase tracking-widest italic"><i class="fas fa-check-circle mr-1"></i> Berhasil</span>
+                                <div class="flex gap-2">
+                                    <button onclick="enableEdit('${t.id}')" class="text-[9px] bg-amber-50 px-3 py-2 rounded-lg font-black text-amber-600 border border-amber-100 uppercase">Edit Alamat/Data</button>
+                                    <a href="${t.bukti_url}" target="_blank" class="text-[9px] bg-slate-50 px-3 py-2 rounded-lg font-black text-slate-600 border border-slate-100 uppercase tracking-tighter italic underline">Bukti Foto</a>
+                                </div>
                             </div>
                         </div>
                     `}
@@ -263,37 +213,84 @@
             }).join('');
         };
 
+        // Enable Edit with Alamat Loading
+        window.enableEdit = (id) => {
+            const t = allTasks.find(item => item.id.toString() === id.toString());
+            if (!t) return init();
+
+            editingTaskId = id.toString();
+            renderTasks();
+
+            setTimeout(() => {
+                const dtInput = document.getElementById(`datetime-${id}`);
+                const penInput = document.getElementById(`penerima-${id}`);
+                const ketInput = document.getElementById(`keterangan-${id}`);
+                const almInput = document.getElementById(`alamat-${id}`);
+
+                if (almInput) almInput.value = t.alamat_singkat || '';
+                if (penInput) penInput.value = t.penerima || '';
+                if (ketInput) ketInput.value = t.keterangan || '';
+                if (t.tanggal_pengiriman && dtInput) {
+                    const date = new Date(t.tanggal_pengiriman);
+                    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+                    dtInput.value = date.toISOString().slice(0, 16);
+                }
+                almInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        };
+
+        window.cancelEdit = () => { editingTaskId = null; renderTasks(); };
+
         window.completeTask = async (id) => {
             const dt = document.getElementById(`datetime-${id}`).value;
             const pen = document.getElementById(`penerima-${id}`).value;
             const ket = document.getElementById(`keterangan-${id}`).value;
+            const alm = document.getElementById(`alamat-${id}`).value;
             const file = document.getElementById(`file-${id}`).files[0];
-            
-            if (!dt || !file || !pen) return alert('Wajib isi Waktu, Nama Penerima & Foto!');
+            const taskObj = allTasks.find(t => t.id.toString() === id.toString());
 
+            if (!dt || !pen || !alm) return alert('Alamat, Penerima, dan Waktu wajib diisi!');
+            
             const btn = document.getElementById(`btn-${id}`);
-            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> MENGIRIM...';
+            btn.disabled = true; btn.innerHTML = 'MENGIRIM...';
 
             try {
-                const compFile = await compressImage(file);
-                const path = `bukti_${id}_${Date.now()}.jpg`;
-                await supabase.storage.from('bukti').upload(path, compFile);
-                const { data: url } = supabase.storage.from('bukti').getPublicUrl(path);
+                let finalUrl = taskObj.bukti_url;
+                if (file) {
+                    const reader = new FileReader();
+                    const compBlob = await new Promise(resolve => {
+                        reader.readAsDataURL(file);
+                        reader.onload = (e) => {
+                            const img = new Image();
+                            img.src = e.target.result;
+                            img.onload = () => {
+                                const canvas = document.createElement('canvas');
+                                let w = 800; let h = img.height * (800/img.width);
+                                canvas.width = w; canvas.height = h;
+                                canvas.getContext('2d').drawImage(img,0,0,w,h);
+                                canvas.toBlob(resolve, 'image/jpeg', 0.7);
+                            };
+                        };
+                    });
+                    const path = `bukti_${id}_${Date.now()}.jpg`;
+                    await supabase.storage.from('bukti').upload(path, compBlob);
+                    finalUrl = supabase.storage.from('bukti').getPublicUrl(path).data.publicUrl;
+                }
 
-                // Pastikan kolom 'penerima' dan 'keterangan' ada di tabel 'tasks' Anda
                 await supabase.from('tasks').update({
                     status: 'selesai',
-                    bukti_url: url.publicUrl,
                     penerima: pen,
                     keterangan: ket,
-                    tanggal_pengiriman: new Date(dt).toISOString()
+                    alamat_singkat: alm, // Update Alamat Baru
+                    tanggal_pengiriman: new Date(dt).toISOString(),
+                    bukti_url: finalUrl
                 }).eq('id', id);
 
-                alert('Tugas Berhasil Diselesaikan!');
+                alert('Data & Alamat Berhasil Diperbarui!');
                 location.reload();
             } catch (err) {
                 alert('Gagal: ' + err.message);
-                btn.disabled = false; btn.innerText = "KONFIRMASI SELESAI";
+                btn.disabled = false; btn.innerText = 'COBA LAGI';
             }
         };
 
@@ -301,18 +298,15 @@
             if (!myId) window.location.replace('index.html');
             const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', myId).single();
             if (profile) document.getElementById('userNameDisplay').innerText = profile.full_name;
-            
+
             const { data: tasks } = await supabase.from('tasks').select('*').eq('assigned_to', myId).order('created_at', { ascending: false });
             if (tasks) { allTasks = tasks; renderTasks(); }
-
-            window.addEventListener('online', () => document.getElementById('onlineStatus').innerText = 'ONLINE');
-            window.addEventListener('offline', () => document.getElementById('onlineStatus').innerText = 'OFFLINE');
         };
 
-        document.getElementById('btnLogout').onclick = () => {
-            if(confirm('Keluar?')) { localStorage.clear(); window.location.replace('index.html'); }
-        };
+        window.addEventListener('online', () => { document.getElementById('onlineStatus').innerText = 'ONLINE'; });
+        window.addEventListener('offline', () => { document.getElementById('onlineStatus').innerText = 'OFFLINE'; });
 
+        document.getElementById('btnLogout').onclick = () => { if(confirm('Keluar?')) { localStorage.clear(); window.location.replace('index.html'); }};
         init();
     })();
     </script>
