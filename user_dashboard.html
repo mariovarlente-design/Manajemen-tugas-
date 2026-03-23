@@ -21,8 +21,13 @@
         .clock-container { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-left: 4px solid #3b82f6; }
         #waFloatingWrapper { animation: floatWA 3s ease-in-out infinite; z-index: 9999; }
         @keyframes floatWA { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        
         /* Pencegahan scroll saat tarik gambar */
         .no-scroll { overflow: hidden; }
+        
+        /* === FITUR BARU: Animasi Modal Slide-Up === */
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .animate-slide-up { animation: slideUp 0.3s ease-out; }
     </style>
 </head>
 <body class="flex flex-col">
@@ -35,11 +40,11 @@
         <div class="max-w-xl mx-auto px-5 flex justify-between h-20 items-center">
             <div class="flex items-center gap-3">
                 <div class="gradient-blue p-2 rounded-xl shadow-lg">
-                    <img src="https://oyakbndsejhpqsvycdud.supabase.co/storage/v1/object/public/logo/fsimage%20(1).png" class="h-7 invert" alt="Logo">
+                   <img src="https://oyakbndsejhpqsvycdud.supabase.co/storage/v1/object/public/logo/fsimage%20(1).png" class="h-7 invert" alt="Logo">
                 </div>
                 <div>
-                    <span class="text-slate-900 font-extrabold text-sm block leading-none tracking-tight">KAR MOBILE</span>
-                    <span class="text-[8px] text-emerald-600 font-bold uppercase tracking-[0.2em]">Courier Management System</span>
+                    <span class="text-slate-1000 font-extrabold text-sm block leading-none tracking-tight">KAR MOBILE</span>
+                    <span class="text-[10px] text-emerald-600 font-bold uppercase tracking-[0.2em]">Courier Management System</span>
                 </div>
             </div>
             <button id="btnLogout" class="w-10 h-10 flex items-center justify-center rounded-xl bg-rose-50 text-rose-500 active:scale-90 transition">
@@ -49,7 +54,7 @@
     </nav>
 
     <div id="waFloatingWrapper" class="fixed bottom-6 right-6">
-        <a href="https://wa.me/6285793117746" target="_blank" class="bg-emerald-500 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl border-4 border-white">
+        <a href="https://wa.me/6285793117746  " target="_blank" class="bg-emerald-500 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl border-4 border-white">
             <i class="fab fa-whatsapp"></i>
         </a>
     </div>
@@ -72,7 +77,7 @@
                     <span id="onlineStatus" class="text-[9px] font-bold px-2 py-1 rounded-md bg-emerald-100 text-emerald-600 uppercase">Online</span>
                 </div>
             </div>
-            
+
             <div class="clock-container rounded-2xl p-4 shadow-lg text-white flex justify-between items-center">
                 <div>
                     <p id="realtimeDate" class="text-[10px] font-bold text-blue-400 uppercase tracking-tighter">---</p>
@@ -90,6 +95,29 @@
         <div id="taskList" class="space-y-6 pb-20"></div>
     </main>
 
+    <!-- === FITUR BARU: Modal Pilihan Sumber Foto === -->
+    <div id="photoSourceModal" class="fixed inset-0 bg-black/50 z-[60] hidden flex items-end justify-center">
+        <div class="bg-white rounded-t-3xl w-full max-w-xl p-6 animate-slide-up">
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-6"></div>
+            <h3 class="font-bold text-slate-800 mb-4 text-center">Pilih Sumber Foto</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="selectPhotoSource('camera')" class="flex flex-col items-center gap-3 p-4 rounded-2xl bg-blue-50 active:scale-95 transition">
+                    <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <span class="text-xs font-bold text-slate-700">Kamera</span>
+                </button>
+                <button onclick="selectPhotoSource('gallery')" class="flex flex-col items-center gap-3 p-4 rounded-2xl bg-emerald-50 active:scale-95 transition">
+                    <div class="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center text-white">
+                        <i class="fas fa-images"></i>
+                    </div>
+                    <span class="text-xs font-bold text-slate-700">Galeri</span>
+                </button>
+            </div>
+            <button onclick="closePhotoModal()" class="w-full mt-6 py-3 text-sm font-bold text-slate-500">Batal</button>
+        </div>
+    </div>
+
     <script>
     (function() {
         'use strict';
@@ -104,16 +132,57 @@
         let allTasks = [];
         let activeFilter = 'pending';
 
+        // === VARIABEL GLOBAL UNTUK PHOTO SELECTOR ===
+        let currentTaskId = null;
+        let currentFileInput = null;
+
+        // === FUNGSI BARU: Handler Modal Foto ===
+        window.openPhotoSelector = (taskId) => {
+            currentTaskId = taskId;
+            currentFileInput = document.getElementById(`file-${taskId}`);
+            document.getElementById('photoSourceModal').classList.remove('hidden');
+            document.body.classList.add('no-scroll');
+        };
+
+        window.closePhotoModal = () => {
+            document.getElementById('photoSourceModal').classList.add('hidden');
+            document.body.classList.remove('no-scroll');
+            currentTaskId = null;
+            currentFileInput = null;
+        };
+
+        window.selectPhotoSource = (source) => {
+            if (!currentFileInput) return;
+            
+            // Set atau hapus atribut capture sesuai pilihan user
+            if (source === 'camera') {
+                currentFileInput.setAttribute('capture', 'environment');
+            } else {
+                currentFileInput.removeAttribute('capture');
+            }
+            
+            // Tutup modal lalu trigger file picker native browser
+            closePhotoModal();
+            currentFileInput.click();
+        };
+
+        // Tutup modal jika user klik di area gelap (backdrop)
+        document.addEventListener('click', (e) => {
+            const modal = document.getElementById('photoSourceModal');
+            if (e.target === modal) closePhotoModal();
+        });
+        // === AKHIR FUNGSI BARU ===
+
         async function init() {
             updateClock(); setInterval(updateClock, 1000);
             updateOnlineStatus();
             window.addEventListener('online', updateOnlineStatus);
             window.addEventListener('offline', updateOnlineStatus);
-            
+
             await loadProfile();
             await fetchTasks();
             updateSyncBadge();
-            
+
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js').catch(() => {});
             }
@@ -172,7 +241,7 @@
         function renderTasks() {
             const container = document.getElementById('taskList');
             const filtered = allTasks.filter(t => t.status === activeFilter);
-            
+
             if (filtered.length === 0) {
                 container.innerHTML = `<div class="text-center py-20"><i class="fas fa-folder-open text-slate-200 text-5xl mb-4"></i><p class="text-slate-400 font-bold italic">Kosong</p></div>`;
                 return;
@@ -210,14 +279,17 @@
                                         <textarea id="keterangan-${t.id}" placeholder="Catatan penerima..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-bold h-16 resize-none focus:border-blue-500 outline-none"></textarea>
                                     </div>
                                     
-                                    <label class="flex flex-col items-center justify-center w-full min-h-[140px] border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 active:bg-slate-100 cursor-pointer relative overflow-hidden transition">
+                                    <!-- MODIFIKASI: Label sekarang memanggil openPhotoSelector -->
+                                    <label onclick="openPhotoSelector('${t.id}')" class="flex flex-col items-center justify-center w-full min-h-[140px] border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 active:bg-slate-100 cursor-pointer relative overflow-hidden transition">
                                         <div id="preview-container-${t.id}" class="absolute inset-0 hidden"><img id="img-preview-${t.id}" class="w-full h-full object-cover"></div>
-                                        <div id="placeholder-${t.id}" class="text-center">
+                                        <div id="placeholder-${t.id}" class="text-center pointer-events-none">
                                             <i class="fas fa-camera text-2xl text-slate-300 mb-2"></i>
-                                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Ambil Foto Bukti</p>
+                                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Ambil / Pilih Foto</p>
+                                            <span class="text-[8px] text-slate-300 mt-1 block">Kamera atau Galeri</span>
                                         </div>
-                                        <input type="file" id="file-${t.id}" accept="image/*" capture="environment" class="hidden" onchange="previewImage(this, '${t.id}')">
                                     </label>
+                                    <!-- MODIFIKASI: Input file hapus capture="environment" (diatur via JS) -->
+                                    <input type="file" id="file-${t.id}" accept="image/*" class="hidden" onchange="previewImage(this, '${t.id}')">
                                     
                                     <button onclick="completeTask('${t.id}')" id="btn-${t.id}" class="w-full gradient-blue text-white font-black py-4 rounded-2xl shadow-lg active:scale-95 transition-all">KONFIRMASI SELESAI</button>
                                 </div>
@@ -263,22 +335,19 @@
 
                     updateLocalStatus(id);
 
-// --- LOGIKA NOTIFIKASI WA OTOMATIS ---
-const task = allTasks.find(t => t.id === id);
-const adminNumber = "6285693456415"; // Nomor admin Anda
-const pesan = `*NOTIFIKASI TUGAS SELESAI*%0A%0A` +
-              `📦 *No Surat:* ${task.no_surat || '-'}%0A` +
-              `🏢 *Tujuan:* ${task.nama_pt}%0A` +
-              `👤 *Penerima:* ${task.penerima || '-'}%0A` +
-              `✅ *Status:* SELESAI%0A` +
-              `💬 *Ket:* ${ket || '-'}%0A%0A` +
-              `_Dikirim otomatis dari KAR Mobile_`;
+                    // --- LOGIKA NOTIFIKASI WA OTOMATIS (TETAP SAMA) ---
+                    const task = allTasks.find(t => t.id === id);
+                    const adminNumber = "6285693456415"; 
+                    const pesan = `*NOTIFIKASI TUGAS SELESAI*%0A%0A` +
+                                `📦 *No Surat:* ${task.no_surat || '-'}%0A` +
+                                `🏢 *Tujuan:* ${task.nama_pt}%0A` +
+                                `👤 *Penerima:* ${task.penerima || '-'}%0A` +
+                                `✅ *Status:* SELESAI%0A` +
+                                `💬 *Ket:* ${ket || '-'}%0A%0A` +
+                                `_Dikirim otomatis dari KAR Mobile_`;
 
-// Membuka WhatsApp secara otomatis
-window.open(`https://wa.me/${adminNumber}?text=${pesan}`, '_blank');
-
-alert('Berhasil terkirim & Notifikasi WA disiapkan!');
-
+                    window.open(`https://wa.me/${adminNumber}?text=${pesan}`, '_blank');
+                    alert('Berhasil terkirim & Notifikasi WA disiapkan!');
                 }
             } catch (e) { alert('Gagal: ' + e.message); }
             finally { btn.disabled = false; btn.innerHTML = 'KONFIRMASI SELESAI'; }
@@ -297,7 +366,7 @@ alert('Berhasil terkirim & Notifikasi WA disiapkan!');
 
             for (const item of pending) {
                 try {
-                    const fileName = `KAG_OFF_${item.taskId}_${Date.now()}.jpg`;
+                    const fileName = `KAR_OFF_${item.taskId}_${Date.now()}.jpg`;
                     await supabase.storage.from('bukti').upload(fileName, item.file);
                     const { data: url } = supabase.storage.from('bukti').getPublicUrl(fileName);
                     await supabase.from('tasks').update({ status: 'selesai', bukti_url: url.publicUrl, tanggal_pengiriman: item.waktuSelesai, keterangan: item.keterangan }).eq('id', item.taskId);
