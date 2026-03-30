@@ -22,6 +22,36 @@
         #taskBody tr { animation: fadeIn 0.4s ease backwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .marquee-container {
+    overflow: hidden;
+    white-space: nowrap;
+    background: #fef3c7; /* Kuning lembut */
+    border-bottom: 1px solid #fde68a;
+    padding: 12px 0;
+    position: relative;
+    width: 100%;
+}
+
+.marquee-text {
+    display: inline-block;
+    padding-left: 100%; /* Mulai dari paling kanan layar */
+    animation: marquee 20s linear infinite;
+    font-size: 16px;
+    font-weight: 800;
+    color: #92400e;
+    text-transform: uppercase;
+}
+
+@keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+
+.marquee-container:hover .marquee-text {
+    animation-play-state: paused;
+}
+     
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -38,7 +68,13 @@
             <button id="btnLogout" class="bg-rose-50 text-rose-600 px-4 py-2 rounded-xl font-bold text-sm hover:bg-rose-100 transition">Logout</button>
         </div>
     </nav>
-
+    <div class="marquee-container">
+    <div class="marquee-text">
+       
+     ⚠️ PENTING: MOHON PASTIKAN INPUT DATA TUGAS SUDAH BENAR, TERUTAMA ALAMAT TUJUAN YANG BENAR......
+     ⚠️ PENTING: Mohon pastikan input data tugas sudah benar, terutama ALAMAT TUJUAN yang akurat dan lengkap untuk memudahkan kurir di lapangan.
+    </div>
+</div>
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="gradient-blue p-6 rounded-[2rem] shadow-xl text-white">
@@ -122,7 +158,7 @@
                     <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
                 </span>
                 <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
-                    Developed by: <span class="text-slate-900">rio nurmansyah</span> 
+                    Created by: <span class="text-slate-900">rionurmansyah</span> 
                     <span class="mx-2 text-slate-300">●</span> 
                     <span class="text-blue-600">2026</span>
                 </p>
@@ -141,6 +177,7 @@
                 </div>
                 <input type="text" id="edit_nama_pt" placeholder="Nama PT" class="w-full bg-slate-50 rounded-xl px-4 py-2 border-0">
                 <input type="text" id="edit_penerima" placeholder="Penerima" class="w-full bg-slate-50 rounded-xl px-4 py-2 border-0">
+                <input type="text" id="edit_alamat_detail" placeholder="Alamat Detail" class="w-full bg-slate-50 rounded-xl px-4 py-2 border-0">
                 <textarea id="edit_keterangan" placeholder="Keterangan" class="w-full bg-slate-50 rounded-xl px-4 py-2 border-0 h-20"></textarea>
             </div>
             <div class="flex gap-3 mt-8">
@@ -322,10 +359,10 @@
             if (finalY > 150) { doc.addPage(); finalY = 30; }
             doc.setFontSize(10);
             doc.text("Dibuat Oleh,", 40, finalY);
-            doc.text("Admin / PIC,", 40, finalY + 5);
+            doc.text("Admin Operasional,", 40, finalY + 5);
             doc.line(40, finalY + 25, 90, finalY + 25);
             doc.text("Mengetahui,", doc.internal.pageSize.width - 90, finalY);
-            doc.text("HRD/Atasan,", doc.internal.pageSize.width - 90, finalY + 5);
+            doc.text("Manager PT KAG,", doc.internal.pageSize.width - 90, finalY + 5);
             doc.line(doc.internal.pageSize.width - 90, finalY + 25, doc.internal.pageSize.width - 40, finalY + 25);
 
             doc.save(`KAG_LAPORAN_${namaKurir}_${start}.pdf`);
