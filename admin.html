@@ -190,7 +190,7 @@
     <script>
     (function() {
         'use strict';
-        const SUPABASE_URL = 'https://qwscimoacqwuwdivfccu.supabase.co/rest/v1/';
+        const SUPABASE_URL = 'https://qwscimoacqwuwdivfccu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3c2NpbW9hY3F3dXdkaXZmY2N1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxNTY4NDUsImV4cCI6MjEwNzczMjg0NX0.mQHxYC8B3NyOTIp-WmSAZNE_FItJUSckE7a7yLNkK64';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -310,7 +310,7 @@
 
             if (filteredData.length === 0) return alert("Data tidak ditemukan.");
 
-            const logoUrl = "https://oyakbndsejhpqsvycdud.supabase.co/storage/v1/object/public/logo/fsimage%20(1).png";
+            const logoUrl = "https://qwscimoacqwuwdivfccu.supabase.co/storage/v1/object/public/logo/fsimage%20(1).png";
             try {
                 const img = new Image();
                 img.src = logoUrl; img.crossOrigin = "Anonymous";
