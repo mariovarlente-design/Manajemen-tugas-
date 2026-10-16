@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="KAR Mobile">
-    <link rel="apple-touch-icon" href="https://qwscimoacqwuwdivfccu.supabase.co/storage/v1/object/public/logo/klase.png">
+    <link rel="apple-touch-icon" href="https://lnyvysxqzfywirypspfh.supabase.co/storage/v1/object/public/logo/klase.png">
 
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -22,7 +22,6 @@
     <style> 
         body { font-family: 'Inter', sans-serif; } 
         .toggle-password { cursor: pointer; user-select: none; }
-        /* Animasi halu untuk tombol install jika diperlukan nanti */
         #installArea.hidden { display: none; }
     </style>
 </head>
@@ -30,7 +29,7 @@
 
     <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
         <div class="text-center mb-8">
-            <img src="https://qwscimoacqwuwdivfccu.supabase.co/storage/v1/object/public/logo/fsimage%20(1).png" alt="Logo PT Klase Auto Graha" class="h-20 mx-auto mb-4 object-contain">         
+            <img src="https://lnyvysxqzfywirypspfh.supabase.co/storage/v1/object/public/logo/klase.png" alt="Logo PT Klase Auto Graha" class="h-20 mx-auto mb-4 object-contain">         
             <h2 class="text-xl font-bold text-slate-800">PT Klase Auto Graha</h2>
             <p class="text-slate-500 text-sm">Sistem Manajemen Pengiriman Dokumen</p>
         </div>
@@ -49,8 +48,8 @@
         <div id="loginForm">
             <div class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700">Username / Email</label>
-                    <input type="text" id="loginUser" class="mt-1 block w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="admin atau email">
+                    <label class="block text-sm font-medium text-slate-700">Email</label>
+                    <input type="email" id="loginUser" class="mt-1 block w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="kurir@email.com">
                 </div>
                 <div class="relative">
                     <label class="block text-sm font-medium text-slate-700">Password</label>
@@ -92,26 +91,22 @@
 
         <p id="msg" class="mt-4 text-center text-red-500 text-sm font-medium min-h-[20px]"></p>
     </div>
-    
 
     <script>
     (function() {
         'use strict';
 
-        const SUPABASE_URL = 'https://qwscimoacqwuwdivfccu.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3c2NpbW9hY3F3dXdkaXZmY2N1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxNTY4NDUsImV4cCI6MjEwNzczMjg0NX0.mQHxYC8B3NyOTIp-WmSAZNE_FItJUSckE7a7yLNkK64';
+        const SUPABASE_URL = 'https://lnyvysxqzfywirypspfh.supabase.co';
+        const SUPABASE_KEY = 'GANTI_DENGAN_ANON_KEY_BARU_ANDA'; // Masukkan Anon Key project baru Anda di sini
         const ADMIN_USER = "admin";
         const ADMIN_PASS = "admin123";
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // === LOGIKA PWA & INSTALL BUTTON ===
         let deferredPrompt;
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('✅ SW Terdaftar'))
-                    .catch(err => console.error('⚠️ SW Gagal', err));
+                navigator.serviceWorker.register('sw.js').catch(err => console.error(err));
             });
         }
 
@@ -132,7 +127,6 @@
             }
         });
 
-        // === FUNGSI UI ===
         function togglePassword(inputId, iconId) {
             const input = document.getElementById(inputId);
             const icon = document.getElementById(iconId);
@@ -148,7 +142,6 @@
             document.getElementById('msg').innerText = '';
         }
 
-        // === FUNGSI LOGIN ===
         async function handleLogin() {
             const user = document.getElementById('loginUser').value.trim();
             const pass = document.getElementById('loginPass').value;
@@ -171,7 +164,7 @@
 
                 localStorage.setItem('role', 'kurir');
                 localStorage.setItem('userId', data.user.id);
-                window.location.replace('user_dashboard.html');
+                window.location.replace('Dashboard.html');
 
             } catch (err) {
                 msg.innerText = "Email atau password salah.";
@@ -181,7 +174,6 @@
             }
         }
 
-        // === FUNGSI REGISTER ===
         async function handleRegister() {
             const name = document.getElementById('regName').value.trim();
             const email = document.getElementById('regEmail').value.trim();
@@ -202,7 +194,7 @@
                     email: email, password: pass, options: { data: { full_name: name } }
                 });
                 if (error) throw error;
-                alert('Berhasil! Silakan cek email atau langsung login.');
+                alert('Berhasil! Silakan langsung login.');
                 toggleView();
             } catch (err) {
                 msg.innerText = err.message;
@@ -212,7 +204,6 @@
             }
         }
 
-        // === EVENT LISTENERS ===
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('toggleLoginPass').onclick = () => togglePassword('loginPass', 'toggleLoginPass');
             document.getElementById('toggleRegPass').onclick = () => togglePassword('regPass', 'toggleRegPass');
